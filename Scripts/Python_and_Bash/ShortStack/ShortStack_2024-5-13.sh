@@ -8,7 +8,7 @@ like the .fa files because they start with ">@", so I removed the "@" with the f
 sed 's/^>@/>/' .fa > .fasta.
 I did this for all of the .fa files in the directory. 
 The previous step in the pipeline is: 3_and_5_prime_UTR_Calculations.py (/home/administrator/Documents/Kaas/Venom_ncRNA_project/Scripts/Python/3_and_5_prime_UTR_Calculations.py)
-The next step in the pipeline is: mature_miRNA_extraction_2024-5-13.sh (/home/administrator/Documents/Kaas/Venom_ncRNA_project/Scripts/miRanda/ShortStack_out_to_miRanda_data/mature_miRNA_extraction_2024-4-9.sh).
+The next step in the pipeline is: mature_miRNA_extraction_2024-5-13.sh (/home/administrator/Documents/Kaas/Venom_ncRNA_project/Scripts/miRanda/ShortStack_out_to_miRanda_data/mature_miRNA_extraction_2024-5-13.sh).
 Step1
 
 # Define variables:

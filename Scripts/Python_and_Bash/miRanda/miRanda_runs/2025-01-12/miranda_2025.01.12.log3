@@ -1,0 +1,97 @@
+The following FASTA files will be processed:
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_five_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_five_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_five_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_five_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_five_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_five_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_five_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_three_prime_utr.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_CDS.fasta
+/home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_five_prime_utr.fasta
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1086_viridis_South_M_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1087_viridis_North_F_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_five_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1087_viridis_North_F_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1086_viridis_South_M_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0857_viridis_North_M_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_five_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0987_lutosus_Other_F_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_five_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0857_viridis_North_M_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/Crotalus_viridis_reference_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_five_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1082_viridis_South_M_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0857_viridis_North_M_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0857_viridis_North_M_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1087_viridis_North_F_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1087_viridis_North_F_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0985_concolor_Other_F_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_five_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1081_viridis_Mid_M_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_five_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1086_viridis_South_M_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1086_viridis_South_M_five_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1081_viridis_Mid_M_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/Crotalus_viridis_reference_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0985_concolor_Other_F_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0987_lutosus_Other_F_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1081_viridis_Mid_M_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1081_viridis_Mid_M_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0987_lutosus_Other_F_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0987_lutosus_Other_F_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1082_viridis_South_M_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_three_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/Crotalus_viridis_reference_three_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/Crotalus_viridis_reference_three_prime_utr.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_CDS.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV0985_concolor_Other_F_CDS_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV0985_concolor_Other_F_CDS.fasta.
+FASTA file: /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_five_prime_utr.fasta currently being proccessed
+No preexisting miRanda run for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/miRanda/miRanda_2025-01-12/consensus_CV1082_viridis_South_M_five_prime_utr_miranda_miRNA_targets.out detected. Running miRanda.
+miRanda completed successfully for /home/administrator/Documents/Kaas/Venom_ncRNA_project/Results/bcftools/fasta_files/feature_files/consensus_CV1082_viridis_South_M_five_prime_utr.fasta.
