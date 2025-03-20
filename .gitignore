@@ -34,3 +34,15 @@ x_Old/
 *.Rhistory
 */x_Old
 */X_Old
+
+# Klauber directories
+# Ignore data directories
+Usable_data/
+Data/
+Results/
+Results_backup/
+intermediate_files/
+
+# Ignore R related files
+*.Rdata
+*.Rhistory 
