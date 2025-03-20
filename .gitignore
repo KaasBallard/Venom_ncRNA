@@ -1,0 +1,35 @@
+# R files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Manuscript and powerpoints
+1_Manuscript/
+2_PowerPoints/
+
+# Ignore all of the data, figures, and tables
+Data/
+Figures/
+Tables/
+Scripts/R/VariationAnalysis/2_BRMS/Model_Diagnostics/
+Notes/
+
+# Also don't track mac system files
+*/.DS_Store
+
+# Also don't track the old shit
+x_Old/
+
+# Ignore any kind of file we don't want to keep track of
+*.txt
+*.log
+*.docx
+*.pdf
+*.png
+*.pptx
+*.RData
+*.Rapp.history
+*.Rhistory
+*/x_Old
+*/X_Old

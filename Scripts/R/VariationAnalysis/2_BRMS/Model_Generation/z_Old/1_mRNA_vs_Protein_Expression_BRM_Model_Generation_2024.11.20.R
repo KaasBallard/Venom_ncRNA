@@ -1,0 +1,922 @@
+# Last Edited: 2024/11/14
+
+#### Set up and Read Data ####
+
+# Load in packages
+library(compositions)
+library(cowplot)
+library(tidyverse)
+library(scales)
+# library(matrixStats)
+library(ggrepel)
+# library(ggpubr)
+library(RColorBrewer)
+library(viridis)
+library(ggrepel)
+library(readxl)
+library(ggpmisc)
+library(ggplot2)
+library(gganimate)
+library(gifski)
+library(modelr)
+library(scales)
+# Load parallel package for the loop later on
+library(parallel)
+
+# Load libraries that are important for the tree model
+library(brms)
+library(visreg)
+library(ggplot2)
+library(ape)
+library(plyr)
+library(ggtree)
+library(phytools)
+library(MuMIn)
+library(ggtree)
+library(tidytree)
+library(tidybayes)
+library(MuMIn)
+library(broom.mixed)
+library(lme4)
+library(cmdstanr)
+# Source my functions
+# source('/Users/ballardk/Library/CloudStorage/OneDrive-UTArlington/Bin/R/MyFunctions/MyFunctions.R')
+# source('/Users/kaasballard/Library/CloudStorage/OneDrive-UTArlington/Bin/R/MyFunctions/MyFunctions.R')
+
+
+
+# Set working directory
+setwd('~/Dropbox/CastoeLabFolder/projects/Venom_Gene_Regulation/Venom_ncRNA/')
+# setwd('/Users/ballardk/Library/CloudStorage/OneDrive-UTArlington/Documents/Lab/Projects/Venom_grant/ncRNA/')
+# setwd("C:/Users/kaasb/OneDrive - UT Arlington (1)/Documents/Lab/Projects/Venom_grant/ncRNA/")
+
+# Create variable for the fused dataset.
+# If this is in Dropbox the file needs to be on the machine
+miRNA_mRNA_protein_data <- 'Data/Merged/miRNA_mRNA_Protein_Combined_Data_IMPORTANT.2024.11.20.tsv'
+
+
+# Read both in as data frames
+miRNA_mRNA_protein_df <- read.table(file = miRNA_mRNA_protein_data, header = T)
+# # I am going to exclude the following genes because they are not well annotated
+# excluded_genes = c(
+#   'maker-scaffold-mi1-augustus-gene-59.13_crovir-transcript-12940',
+#   'maker-scaffold-mi1-augustus-gene-59.20_crovir-transcript-12947',
+#   'maker-scaffold-mi2-augustus-gene-22.17_crovir-transcript-739',
+#   'maker-scaffold-un11-augustus-gene-5.19',
+#   'XP_016876419',
+#   'XP_011528471'
+# )
+# # I removed the above method because it isn't capturing every instance of the problem.
+
+
+# Create shorter df name and do some minor tweaks to it's structure for readability
+mi_df <- miRNA_mRNA_protein_df %>% 
+  dplyr::rename(
+    'miRNA.Cluster.Original' = 'miRNA.Cluster',
+    'Genes' = 'Converted.Gene.IDs',
+    'miRNA.Cluster' = 'Putative.miRNA.Name'
+  ) %>%
+  dplyr::select(miRNA.Cluster, everything()) %>% # Move the new miRNA.Clusters to the front
+  filter(!str_detect(Genes, 'maker-scaffold|augustus|XP_')) %>% # This should get rid of all of the weirdly annotated genes
+  # filter(!(Genes %in% excluded_genes)) %>% 
+  # filter(str_detect(Origin, 'three_prime_utr|five_prime_utr')) %>% # Filter out CDS targeting miRNAs
+  dplyr::select(-'gtf.gene', -'crovir.transcript', -'Protein.Probability', -'Top.Peptide.Probability', -'Blast.Alignment.Length') %>%  # Remove columns to save memory
+  # # Filter out unobserved proteins
+  # dplyr::filter(
+  #   Protein.Observed == 'Yes'
+  # ) %>%
+  # Change the name of the venom adam genes so that they are correct
+  mutate(
+    Genes = ifelse(Genes == "Venom_ADAM28_1", 'Venom_SVMP12', Genes),
+    Genes = ifelse(Genes == 'Venom_ADAM28_2', 'ADAM28', Genes)
+  ) %>% 
+  # Filter out EXO because the weren't expressed at all
+  dplyr::filter(!str_detect(Genes, 'EXO')) # %>% 
+  # dplyr::filter(str_detect(Genes, 'PLA2|BPP')) # Temporarily filter out everything but PLA2s to reduce model complexity and thus run time
+rm(miRNA_mRNA_protein_df)
+
+# Tree file for the 12 snakes samples
+tree_file <- 'Data/Tree/11Snake_Tree_ViridisPolytomy.phy'
+
+# Read tree file in
+snake_tree <- ape::read.tree(tree_file)
+
+
+# Create color scheme for the venom genes
+SVMP_color <- '#4A70B5'
+ADAM_color <- '#9A70B5'
+SVSP_color <- '#F0B830' 
+PLA2_color <- '#7570B3'
+miRNA_color <- '#8B0AA5'
+VEGF_color <- '#74ADD1'
+ohanin_color <- '#3A489C'
+myotoxin_color <- '#B2182B'
+vQC_color <- '#80BC50'
+CRISP_color <- '#E7298A'
+CTL_color <- '#F67E17'
+EXO_color <- '#005824'
+LAAO_color <- '#B35806'
+BPP_color <- '#1B9E77'
+other_color <- '#666666'
+three_prime_color <- 'black'
+# five_prime_color <- '#0072b2'
+five_prime_color <- '#1B9E77'
+# cds_color <- '#d55e00'
+cds_color <- '#4A70B5'
+
+
+
+#### Format the phylogeny and get the matrix ####
+
+# View tip labels
+snake_tree$tip.label
+
+# List all the samples not in the analysis
+missing_samples <- c(
+  "'CV1084_viridis_Mid_M'", "'CV1082_viridis_South_M'", "'CV1095_viridis_North_M'",
+  "'CV1089_viridis_South_M'", "'CV1090_cerberus_Other_M'"
+)
+
+# Drop tips that are not in the study
+snake_tree <- drop.tip(snake_tree, missing_samples)
+snake_tree$tip.label
+
+# After dropping tips, check for NaN values
+any(is.nan(snake_tree$edge.length) | is.na(snake_tree$edge.length))
+
+# Recompute branch lengths after pruning
+snake_tree <- ape::compute.brlen(snake_tree)
+
+# Clean the tip labels by removing single quotes
+snake_tree$tip.label <- gsub("'", "", snake_tree$tip.label) 
+
+# Check the cleaned tip labels
+snake_tree$tip.label
+
+# Create a vector that contains names to rename the old ones
+tip_names <- c(
+  "CV0857_viridis_North_M" = 'LVG.4.CV0857.viridis.North.M', 
+  "CV1081_viridis_Mid_M" = 'LVG.2.CV1081.viridis.Mid.M', 
+  "CV1087_viridis_North_F" = 'RVG.5S.CV1087.viridis.North.F', 
+  "CV1086_viridis_South_M" = 'LVG.9.CV1086.viridis.South.M', 
+  "CV0985_concolor_Other_F" = 'RVG.7S.CV0985.concolor.Other.F', 
+  "CV0987_lutosus_Other_F" = 'RVG.6S.CV0987.lutosus.Other.M'
+)
+
+
+# Rename tips correctly using a match
+for (i in seq_along(tip_names)) {
+  old_name <- names(tip_names)[i]
+  new_name <- tip_names[i]
+  snake_tree$tip.label[snake_tree$tip.label == old_name] <- new_name
+}
+
+# Check tree
+snake_tree$tip.label
+tree_plot <- ggtree(snake_tree) + geom_tiplab()
+# tree_plot
+
+# Get tip labels from the phylogenetic tree
+tree_tips <- snake_tree$tip.label
+
+# Generate the phylogenetic covariance matrix from the tree
+phylo_cov_matrix <- ape::vcv.phylo(snake_tree)
+
+
+
+
+
+
+#### Gene family plots data frame for Venom Gene Dot Plots (VST) ####
+
+# Create a data frame for venom genes only
+venom_genes_df <- mi_df %>%
+  filter(
+    str_starts(Genes, 'Venom_')
+  ) %>%
+  dplyr::select(
+    miRNA.Cluster,
+    Genes,
+    contains('RNA.VST'),
+    contains('RNA.Raw.Counts.'),
+    contains('Intensity.'),
+    contains('miRNA.RPM.'),
+    contains('miRNA.Counts'),
+    Total.Score,
+    Total.Energy
+  ) %>%
+  mutate(Venom.Family = case_when(grepl('SVMP', Genes) ~ 'SVMP', # Add a Venom.Families Column
+                                  grepl('VEGF', Genes) ~ 'VEGF',
+                                  grepl('ohanin', Genes) ~ 'ohanin',
+                                  grepl('vQC', Genes) ~ 'vQC',
+                                  grepl('SVSP', Genes) ~ 'SVSP',
+                                  grepl('PLA2', Genes) ~ 'PLA2',
+                                  grepl('ADAM', Genes) ~ 'ADAM',
+                                  grepl('CRISP', Genes) ~ 'CRISP',
+                                  grepl('CTL', Genes) ~ 'CTL',
+                                  grepl('EXO', Genes) ~ 'EXO',
+                                  grepl('LAAO', Genes) ~ 'LAAO',
+                                  grepl('myotoxin', Genes) ~ 'myotoxin',
+                                  grepl('BPP', Genes) ~ 'BPP',
+                                  TRUE ~ 'others')) %>%
+  distinct()
+glimpse(venom_genes_df)
+
+
+
+#### Build data frame for future analysis ####
+
+# Pivot data frame so that all samples are in a single column
+protein_df <- venom_genes_df %>%
+  dplyr::select(-contains('miRNA.'), -contains('RNA.'), -contains('Max')) %>% 
+  distinct() %>% 
+  pivot_longer(
+    cols = contains('Intensity.'),
+    names_to = 'Sample.ID',
+    values_to = 'Intensity'
+  ) %>% 
+  mutate(Sample.ID = gsub('Intensity.', '', Sample.ID)) %>% 
+  # Add species so that the shapes can be changed in the plot
+  mutate(
+    Species = case_when(
+      grepl('.viridis.', Sample.ID) ~ 'C.viridis',
+      grepl('.lutosus.', Sample.ID) ~ 'C.lutosus',
+      grepl('.concolor.', Sample.ID) ~ 'C.concolor'
+    )
+  )
+glimpse(protein_df)
+
+# Pivot this one too
+rna_raw_counts_df <- venom_genes_df %>%
+  dplyr::select(-contains('miRNA.'), -contains('Intensity'), -contains('Max'), -contains('VST')) %>%
+  distinct() %>%
+  pivot_longer(
+    cols = contains('RNA.Raw.Counts.'),
+    names_to = 'Sample.ID',
+    values_to = 'RNA.Raw.Counts'
+  ) %>%
+  mutate(Sample.ID = gsub('RNA.Raw.Counts.', '', Sample.ID)) %>% 
+  # Add species so that the shapes can be changed in the plot
+  mutate(
+    Species = case_when(
+      grepl('.viridis.', Sample.ID) ~ 'C.viridis',
+      grepl('.lutosus.', Sample.ID) ~ 'C.lutosus',
+      grepl('.concolor.', Sample.ID) ~ 'C.concolor'
+    )
+  )
+glimpse(rna_raw_counts_df)
+
+
+# Also get RNA vst counts
+RNA_vst_df <- venom_genes_df %>%
+  dplyr::select(-contains('miRNA.'), -contains('Intensity'), -contains('Max'), -contains('Raw.Counts.')) %>%
+  distinct() %>%
+  pivot_longer(
+    cols = starts_with('RNA.VST.'),
+    names_to = 'Sample.ID',
+    values_to = 'mRNA.VST'
+  ) %>%
+  mutate(Sample.ID = gsub('RNA.VST.', '', Sample.ID)) %>% 
+  # Add species so that the shapes can be changed in the plot
+  mutate(
+    Species = case_when(
+      grepl('.viridis.', Sample.ID) ~ 'C.viridis',
+      grepl('.lutosus.', Sample.ID) ~ 'C.lutosus',
+      grepl('.concolor.', Sample.ID) ~ 'C.concolor'
+    )
+  )
+glimpse(RNA_vst_df)
+
+# Shared mRNA columns
+shared_mRNA_columns <- intersect(names(rna_raw_counts_df), names(RNA_vst_df))
+
+
+# Fuse the RNA counts and vst data frames
+mRNA_df <- left_join(
+  rna_raw_counts_df,
+  RNA_vst_df,
+  by = shared_mRNA_columns
+)
+glimpse(mRNA_df)
+
+
+# Pivot data that all the miRNA data (rpm) is the same column
+miRNA_rpm_df <- venom_genes_df %>% 
+  dplyr::select(miRNA.Cluster, Genes, Venom.Family, contains('miRNA.RPM'), contains('Max')) %>%
+  distinct() %>%
+  pivot_longer(
+    cols = contains('miRNA.RPM'),
+    names_to = 'Sample.ID',
+    values_to = 'miRNA.RPM'
+  ) %>%
+  mutate(Sample.ID = gsub('miRNA.RPM.', '', Sample.ID)) %>% 
+  # Add species so that the shapes can be changed in the plot
+  mutate(
+    Species = case_when(
+      grepl('.viridis.', Sample.ID) ~ 'C.viridis',
+      grepl('.lutosus.', Sample.ID) ~ 'C.lutosus',
+      grepl('.concolor.', Sample.ID) ~ 'C.concolor'
+    )
+  )
+glimpse(miRNA_rpm_df)
+
+# Pivot data that all the miRNA data (vst) is the same column
+miRNA_vst_df <- venom_genes_df %>% 
+  dplyr::select(miRNA.Cluster, Genes, Venom.Family, contains('miRNA.VST'), contains('Max')) %>%
+  distinct() %>%
+  pivot_longer(
+    cols = contains('miRNA.VST'),
+    names_to = 'Sample.ID',
+    values_to = 'miRNA.VST'
+  ) %>%
+  mutate(Sample.ID = gsub('miRNA.VST.', '', Sample.ID)) %>% 
+  # Add species so that the shapes can be changed in the plot
+  mutate(
+    Species = case_when(
+      grepl('.viridis.', Sample.ID) ~ 'C.viridis',
+      grepl('.lutosus.', Sample.ID) ~ 'C.lutosus',
+      grepl('.concolor.', Sample.ID) ~ 'C.concolor'
+    )
+  )
+glimpse(miRNA_vst_df)
+
+# Get shared names for fusion 
+shared_miRNA_columns <- intersect(names(miRNA_rpm_df), names(miRNA_vst_df))
+
+# Fuse data frames
+miRNA_df <- left_join(
+  miRNA_rpm_df,
+  miRNA_vst_df,
+  by = shared_miRNA_columns
+)
+
+
+# Fuse RNA and protein data back together
+mRNA_protein_df <- left_join(
+  protein_df,
+  mRNA_df,
+  by = c('Sample.ID', 'Genes', 'Venom.Family', 'Species')
+) %>% 
+  # Add a column to indicate their was zero protein expression detected for this data point
+  mutate(
+    Protein.Detected = case_when(
+      Intensity == 0 ~ 'No',
+      Intensity > 0 ~ 'Yes'
+    )
+  ) %>% 
+  filter(!is.na(RNA.Raw.Counts))
+glimpse(mRNA_protein_df)
+
+# Fuse miRNA to the above as well
+mirna_mrna_protein_df <- left_join(
+  mRNA_protein_df,
+  miRNA_df,
+  by = c('Sample.ID', 'Genes', 'Venom.Family', 'Species')
+)
+glimpse(mirna_mrna_protein_df)
+
+# Save data for future use
+write_csv(mirna_mrna_protein_df, file = 'Data/miRNA/miRNA_mRNA_protein_data_for_regression_analysis_2024.11.13.csv')
+
+
+# Apparently zero values are not treated properly by the clr transform, so I am going to create a pseudo-count to fix it.
+# First I need to find the lowest value in each set of data though
+# Find the lowest non-zero Intensity value
+min_nonzero_intensity <- mRNA_protein_df %>%
+  filter(Intensity > 0) %>%
+  summarise(min_value = min(Intensity)) %>%
+  pull(min_value)
+print(min_nonzero_intensity)
+
+# Find the lowest non-zero RNA.VST value
+min_nonzero_rna_vst <- mRNA_protein_df %>%
+  filter(RNA.Raw.Counts > 0) %>%
+  summarise(min_value = min(RNA.Raw.Counts)) %>%
+  pull(min_value)
+print(min_nonzero_rna_vst)
+
+# Initialize pseudo-count for mRNA
+mRNA_pseudo_count <- 1e-7
+
+# Initialize pseudo-count for protein
+protein_pseduo_count <- 1e-7
+
+
+
+
+# Apparently zero values are not treated properly by the clr transform, so I have already filtered out proteins that were not been observed.
+# Calculate CLR
+all_samples_clr_df <- mRNA_protein_df %>%
+  # Replace zeros with the small constant before CLR
+  mutate(Intensity = ifelse(Intensity == 0, protein_pseduo_count, Intensity)) %>%
+  mutate(RNA.Raw.Counts = ifelse(RNA.Raw.Counts == 0, mRNA_pseudo_count, RNA.Raw.Counts)) %>% 
+  group_by(Sample.ID) %>%
+  mutate(Scaled.Protein.Expression = Intensity / sum(Intensity)) %>% # Sum protein expression to 1
+  mutate(Scaled.mRNA.Expression = RNA.Raw.Counts / sum(RNA.Raw.Counts)) %>% # Sum mRNA expression to 1
+  ungroup() %>%
+  # Perform CLR transformation
+  mutate(CLR.Scaled.Protein.Expression = as.numeric(compositions::clr(Scaled.Protein.Expression))) %>%
+  mutate(CLR.Scaled.mRNA.Expression = as.numeric(compositions::clr(Scaled.mRNA.Expression)))
+glimpse(all_samples_clr_df)
+
+# Save the above as a data frame to be read in another script
+write_csv(all_samples_clr_df, file = 'Data/CLR_transformed_data/CLR_mRNA_vs_protein_expression_2024.11.13.csv')
+
+
+# Remove any undetected proteins from the data for fitting purposes
+all_samples_detected_proteins_only_df <- all_samples_clr_df %>%
+  filter(Protein.Detected == 'Yes')
+glimpse(all_samples_detected_proteins_only_df)
+
+# Check for mismatches between tree tips and Sample.ID
+mismatched_samples <- setdiff(all_samples_detected_proteins_only_df$Sample.ID, tree_tips)
+
+# Output mismatches (if any)
+mismatched_samples
+
+# Check for missing or infinite values in the covariance matrix
+any_na_inf <- any(is.na(phylo_cov_matrix) | is.infinite(phylo_cov_matrix))
+
+# Output the result
+any_na_inf
+
+
+# Check the structure of the tree
+str(snake_tree)
+
+# Ensure there are valid branch lengths
+summary(snake_tree$edge.length)
+
+
+
+
+#### Venom model 8: Standard CLR model for mRNA vs Protein ####
+
+
+# ## Run the function in a loop
+# 
+# # Set brms model parameters
+# # Run 3 or 4 times
+# warmup_percentage <- 0.25 # Set the percent to be kept by the model
+# chain <- 6
+# thin <- 500 # make this at least 100, maybe 500
+# 
+# priors <- c(
+#   prior(normal(0, 10), class = "b"), # Fixed effects
+#   prior(normal(0, 10), class = "Intercept"), # Intercept
+#   prior(cauchy(0, 1), class = "sd"), # Random effects standard deviation
+#   prior(cauchy(0, 2), class = "sigma") # Residual standard deviation, allowing for high variability
+# )
+# 
+# # Set number of iterations to be used
+# iterations_list <- c(
+#   5000000, 500000, 250000, 100000, 50000
+# )
+# 
+# # Loop to run the model 10 times
+# for (i in seq_along(iterations_list)) {
+#   t1 <- Sys.time() # Start timer
+# 
+#   # Update the number of iteration and warmup for each run
+#   iter <- iterations_list[i]
+#   warmup <-  iter * warmup_percentage
+# 
+# 
+#   # Run the model
+#   venom_model8 <- brm(
+#     CLR.Scaled.Protein.Expression ~ CLR.Scaled.mRNA.Expression * Venom.Family + (1|gr(Sample.ID, cov = phylo_cov_matrix)),
+#     data = all_samples_detected_proteins_only_df,
+#     family = gaussian(link = 'identity'),
+#     data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+#     control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+#     chains = chain,
+#     iter = iter,
+#     thin = thin,
+#     warmup = warmup,
+#     prior = priors,
+#     save_pars = save_pars(all = T),
+#     cores = chain, 
+#     threads = threading(4),
+#     # Use cmdstanr because it is supposedly faster
+#     backend = "cmdstanr"
+#   )
+# 
+#   # End timer and calculate elapsed time
+#   t2 <- Sys.time() # End timer
+#   timer <- t2 - t1
+#   print(paste('Run ', i, ' completed with ', iter, ' iterations in ', timer))
+# 
+#   # Save each model with a unique file name
+#   saveRDS(venom_model8, file = paste0("Data/Models/mRNA_vs_Protein/venom_model8.", i, "_with_", iter, "_iterations_from_brms_2024.11.13.rds"))
+# }
+
+
+## Run not in a loop
+
+# Set brms model parameters
+warmup_percentage <- 0.25
+chain <- 6
+thin <- 500
+iterations <- 500000
+iterations2 <- 25000 # Temporarily reduce iterations to decrease run time for debugging purposes
+warmup <- iterations * warmup_percentage
+warmup2 <- iterations2 * warmup_percentage
+
+# Set priors
+priors <- c(
+  prior(normal(0, 10), class = "b"), # Fixed effects
+  prior(normal(0, 10), class = "Intercept"), # Intercept
+  prior(cauchy(0, 1), class = "sd"), # Random effects standard deviation
+  prior(cauchy(0, 2), class = "sigma") # Residual standard deviation, allowing for high variability
+)
+
+
+# # Get time
+# t1 <- Sys.time()
+
+# # Run the model
+# venom_model8 <- brm(
+#   CLR.Scaled.Protein.Expression ~
+#     CLR.Scaled.mRNA.Expression * Venom.Family +
+#     (1|gr(Sample.ID, cov = phylo_cov_matrix)),
+
+#   data = all_samples_detected_proteins_only_df,
+#   family = gaussian(link = 'identity'),
+#   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+#   control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+#   chains = chain,
+#   iter = iterations,
+#   thin = thin,
+#   warmup = warmup,
+#   prior = priors,
+#   save_pars = save_pars(all = T),
+#   cores = chain, 
+#   threads = threading(4),
+#   # Use cmdstanr because it is supposedly faster
+#   backend = "cmdstanr"
+# )
+
+# # End timer and calculate elapsed time
+# t2 <- Sys.time()
+# timer <- t2 - t1
+# print(paste('Completed venom_model8 with ', iterations, ' iterations in ', timer))
+
+# # Save the model
+# saveRDS(venom_model8, file = 'Data/Models/mRNA_vs_Protein/Gaussian/venom_model8_with_500000_iterations_from_brms_2024.11.13.rds')
+
+
+
+
+#### Format data for venom modeling with miRNAs ####
+
+# Remove some columns for fusion
+mutated_miRNA_rpm_df <- mirna_mrna_protein_df %>%
+  # Replace zeros with the small constant before CLR
+  mutate(Intensity = ifelse(Intensity == 0, protein_pseduo_count, Intensity)) %>%
+  mutate(RNA.Raw.Counts = ifelse(RNA.Raw.Counts == 0, mRNA_pseudo_count, RNA.Raw.Counts))
+glimpse(mutated_miRNA_rpm_df)
+
+# Get names for fusion
+fusion_names <- intersect(names(mutated_miRNA_rpm_df), names(all_samples_clr_df))
+
+# Create a new data frame to run the model with miRNAs
+miRNA_clr_df <- left_join(
+  mutated_miRNA_rpm_df,
+  all_samples_clr_df,
+  by = fusion_names
+)
+glimpse(miRNA_clr_df)
+
+# Save the above as a data frame to be read in another script
+write_csv(miRNA_clr_df, file = 'Data/CLR_transformed_data/CLR_mRNA_vs_protein_expression_2024.11.13.csv')
+
+# Remove rows with undetected proteins
+miRNA_clr_detected_proteins_only_df <- miRNA_clr_df %>%
+  filter(Protein.Detected == 'Yes')
+
+
+# #### Venom model 9: CLR model with miRNA RPM included ####
+
+# # Get time
+# t1 <- Sys.time()
+
+# # Run the model
+# venom_model9 <- brm(
+#   CLR.Scaled.Protein.Expression ~
+#     CLR.Scaled.mRNA.Expression * Venom.Family +
+#     (1|gr(Sample.ID, cov = phylo_cov_matrix)) +
+#     miRNA.RPM,
+
+#   data = miRNA_clr_detected_proteins_only_df,
+#   family = gaussian(link = 'identity'),
+#   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+#   control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+#   chains = chain,
+#   iter = iterations2,
+#   thin = thin,
+#   warmup = warmup2,
+#   prior = priors,
+#   save_pars = save_pars(all = T),
+#   cores = chain, 
+#   threads = threading(4),
+#   # Use cmdstanr because it is supposedly faster
+#   backend = "cmdstanr"
+# )
+
+# # End timer and calculate elapsed time
+# t2 <- Sys.time()
+# timer <- t2 - t1
+# print(paste('Completed venom_model9 with ', iterations, ' iterations in ', timer))
+
+# # Save the model
+# saveRDS(venom_model9, file = 'Data/Models/ProtVSmRNA_with_miRNA/Gaussian/venom_model9_with_25000_iterations_from_brms_2024.11.13.rds')
+
+
+# #### Venom model 10: CLR model with miRNA binding score included ####
+
+# # Get time
+# t1 <- Sys.time()
+
+# # Run the model
+# venom_model10 <- brm(
+#   CLR.Scaled.Protein.Expression ~
+#     CLR.Scaled.mRNA.Expression * Venom.Family +
+#     (1|gr(Sample.ID, cov = phylo_cov_matrix)) +
+#     Total.Score,
+
+#   data = miRNA_clr_detected_proteins_only_df,
+#   family = gaussian(link = 'identity'),
+#   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+#   control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+#   chains = chain,
+#   iter = iterations2,
+#   thin = thin,
+#   warmup = warmup2,
+#   prior = priors,
+#   save_pars = save_pars(all = T),
+#   cores = chain, 
+#   threads = threading(4),
+#   # Use cmdstanr because it is supposedly faster
+#   backend = "cmdstanr"
+# )
+
+# # End timer and calculate elapsed time
+# t2 <- Sys.time()
+# timer <- t2 - t1
+# print(paste('Completed venom_model10 with ', iterations, ' iterations in ', timer))
+
+# # Save the model
+# saveRDS(venom_model10, file = 'Data/Models/ProtVSmRNA_with_miRNA/Gaussian/venom_model10_with_25000_iterations_from_brms_2024.11.13.rds')
+
+
+# #### Venom model 11: CLR model with miRNA with both binding score and binding energy ####
+
+# # Get time
+# t1 <- Sys.time()
+
+# # Run the model
+# venom_model11 <- brm(
+#   CLR.Scaled.Protein.Expression ~
+#     CLR.Scaled.mRNA.Expression * Venom.Family +
+#     (1|gr(Sample.ID, cov = phylo_cov_matrix)) +
+#     Total.Energy +
+#     Total.Score,
+
+#   data = miRNA_clr_detected_proteins_only_df,
+#   family = gaussian(link = 'identity'),
+#   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+#   control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+#   chains = chain,
+#   iter = iterations2,
+#   thin = thin,
+#   warmup = warmup2,
+#   prior = priors,
+#   save_pars = save_pars(all = T),
+#   cores = chain, 
+#   threads = threading(4),
+#   # Use cmdstanr because it is supposedly faster
+#   backend = "cmdstanr"
+# )
+
+# # End timer and calculate elapsed time
+# t2 <- Sys.time()
+# timer <- t2 - t1
+# print(paste('Completed venom_model11 with ', iterations, ' iterations in ', timer))
+
+# # Save the model
+# saveRDS(venom_model11, file = 'Data/Models/ProtVSmRNA_with_miRNA/Gaussian/venom_model11_with_25000_iterations_from_brms_2024.11.13.rds')
+
+
+# #### Venom model 12: CLR model with miRNA expression, score, and energy ####
+
+# # Get time
+# t1 <- Sys.time()
+
+# # Run the model
+# venom_model12 <- brm(
+#   CLR.Scaled.Protein.Expression ~
+#     CLR.Scaled.mRNA.Expression * Venom.Family +
+#     (1|gr(Sample.ID, cov = phylo_cov_matrix)) +
+#     Total.Energy +
+#     Total.Score +
+#     miRNA.RPM,
+
+#   data = miRNA_clr_detected_proteins_only_df,
+#   family = gaussian(link = 'identity'),
+#   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+#   control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+#   chains = chain,
+#   iter = iterations2,
+#   thin = thin,
+#   warmup = warmup2,
+#   prior = priors,
+#   save_pars = save_pars(all = T),
+#   cores = chain, 
+#   threads = threading(4),
+#   # Use cmdstanr because it is supposedly faster
+#   backend = "cmdstanr"
+# )
+
+# # End timer and calculate elapsed time
+# t2 <- Sys.time()
+# timer <- t2 - t1
+# print(paste('Completed venom_model12 with ', iterations, ' iterations in ', timer))
+
+# # Save the model
+# saveRDS(venom_model12, file = 'Data/Models/ProtVSmRNA_with_miRNA/Gaussian/venom_model12_with_25000_iterations_from_brms_2024.11.13.rds')
+
+
+#### Venom model 13: Modeling untranformed mRNA vs protein ####
+
+
+# Get time
+t1 <- Sys.time()
+
+# Run the model
+# Note that this model uses untranformed data and doens't filter zeros out
+venom_model13 <- brm(
+  bf(
+    Intensity ~ mRNA.VST * Venom.Family + (1|gr(Sample.ID, cov = phylo_cov_matrix)),
+    hu ~ mRNA.VST * Venom.Family + (1|gr(Sample.ID, cov = phylo_cov_matrix))
+  ),
+  
+  data = mRNA_protein_df,
+  family = hurdle_lognormal(),
+  data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+  control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+  chains = chain,
+  iter = iterations,
+  thin = thin,
+  warmup = warmup,
+  prior = priors,
+  save_pars = save_pars(all = T),
+  cores = chain,
+  threads = threading(4),
+  # Use cmdstanr because it is supposedly faster
+  backend = "cmdstanr"
+)
+
+# End timer and calculate elapsed time
+t2 <- Sys.time()
+timer <- t2 - t1
+print(paste('Completed venom_model13 with ', iterations, ' iterations in ', timer))
+
+# Save the model
+saveRDS(venom_model13, file = 'Data/Models/mRNA_vs_Protein/Gaussian/venom_model13_with_500000_iterations_from_brms_2024.11.13.rds')
+
+
+
+
+#### Venom model 14: Modeling untranformed mRNA vs protein with the inclusion of miRNA expression####
+
+
+# Get time
+t1 <- Sys.time()
+
+# Run the model
+# Note that this model uses untranformed data and doens't filter zeros out
+venom_model14 <- brm(
+  bf(
+    Intensity ~ mRNA.VST * Venom.Family + (1|gr(Sample.ID, cov = phylo_cov_matrix)) + (miRNA.VST|miRNA.Cluster) * Venom.Family,
+    hu ~ mRNA.VST * Venom.Family + (1|gr(Sample.ID, cov = phylo_cov_matrix)) + (miRNA.VST|miRNA.Cluster) * Venom.Family
+  ),
+
+  data = mirna_mrna_protein_df,
+  family = hurdle_lognormal(),
+  data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+  control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+  chains = chain,
+  iter = iterations2,
+  thin = thin,
+  warmup = warmup2,
+  prior = priors,
+  save_pars = save_pars(all = T),
+  cores = chain, 
+  threads = threading(4),
+  # Use cmdstanr because it is supposedly faster
+  backend = "cmdstanr"
+)
+
+# End timer and calculate elapsed time
+t2 <- Sys.time()
+timer <- t2 - t1
+print(paste('Completed venom_model14 with ', iterations, ' iterations in ', timer))
+
+# Save the model
+saveRDS(venom_model14, file = 'Data/Models/ProtVSmRNA_with_miRNA/Gaussian/venom_model14_with_25000_iterations_from_brms_2024.11.13.rds')
+
+
+#### Venom model 15: Modeling untranformed miRNA vs mRNA ####
+
+# Get time
+t1 <- Sys.time()
+
+# Run the model
+# The point of this model is to see if miRNAs are reducing mRNA expression levels
+venom_model15 <- brm(
+  bf(
+    mRNA.VST ~ miRNA.VST * Venom.Family + (1|gr(Sample.ID, cov = phylo_cov_matrix)),
+    hu ~ miRNA.VST * Venom.Family + (1|gr(Sample.ID, cov = phylo_cov_matrix))
+  ),
+
+  data = mirna_mrna_protein_df,
+  family = gaussian(link = 'identity'),
+  data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+  control = list(max_treedepth = 14, adapt_delta = 0.9), # Increase tree depth
+  chains = chain,
+  iter = iterations,
+  thin = thin,
+  warmup = warmup,
+  prior = priors,
+  save_pars = save_pars(all = T),
+  cores = chain, 
+  threads = threading(4),
+  # Use cmdstanr because it is supposedly faster
+  backend = "cmdstanr"
+)
+
+# End timer and calculate elapsed time
+t2 <- Sys.time()
+timer <- t2 - t1
+print(paste('Completed venom_model15 with ', iterations, ' iterations in ', timer))
+
+# Save the model
+saveRDS(venom_model15, file = 'Data/Models/miRNA_vs_mRNA/Gaussian/venom_model15_with_500000_iterations_from_brms_2024.11.13.rds')
+
+
+
+
+# #### Venom model 20: Binomial modeling miRNA vs Protein ####
+
+# # Format the data prior to run the model. This changes Protein.Detected to a number scheme: 0 or 1
+# binomial_model_df <- mirna_mrna_protein_df %>% 
+#   select(-Intensity, -RNA.Raw.Counts) %>% 
+#   # Change Protein.Detected to a numeric 0 or 1 rather than No or Yes
+#   mutate(
+#     Protein.Detected = case_when(
+#       grepl('No', Protein.Detected) ~ 0,
+#       grepl('Yes', Protein.Detected) ~ 1
+#     )
+#   ) %>% 
+#   distinct()
+# glimpse(binomial_model_df)
+# write_csv(binomial_model_df, file = 'Data/miRNA/miRNA_mRNA_protein_data_for_binomial_model_2024.11.13.csv')
+
+# # Set a second set of priors
+# priors2 <- c(
+#     prior(normal(0, 1), class = "b"),
+#     prior(normal(0, 1), class = "Intercept"),
+#     prior(cauchy(0, 1), class = "sd")
+#   )
+
+# # Get time
+# t1 <- Sys.time()
+
+# # Run the model
+# venom_model20 <- brm(
+#   Protein.Detected ~ miRNA.VST * Venom.Family +
+#     (1|gr(Sample.ID, cov = phylo_cov_matrix)),
+
+#   data = binomial_model_df,
+#   family = bernoulli(link = "logit"),
+#   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
+#   control = list(max_treedepth = 12, adapt_delta = 0.9), # Increase tree depth
+#   chains = chain,
+#   iter = iterations,
+#   thin = thin,
+#   warmup = warmup2,
+#   prior = priors2,
+#   save_pars = save_pars(all = T),
+#   cores = chain, 
+#   threads = threading(4),
+#   # Use cmdstanr because it is supposedly faster
+#   backend = "cmdstanr"
+# )
+
+# # End timer and calculate elapsed time
+# t2 <- Sys.time()
+# timer <- t2 - t1
+# print(paste('Completed venom_model20 with ', iterations, ' iterations in ', timer))
+
+# # Save the model
+# saveRDS(venom_model20, file = 'Data/Models/ProtVSmRNA_with_miRNA/Bernoulli/venom_model20_with_500000_iterations_from_brms_2024.11.13.rds')

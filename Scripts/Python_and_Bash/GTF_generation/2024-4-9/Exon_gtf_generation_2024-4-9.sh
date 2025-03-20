@@ -1,0 +1,7 @@
+<<Step8c
+The point of this file is to record the commands used to generate the CroVir_rnd1.all.maker.final.homologIDs.updatedNov2019_with_myos_geneidmod_exons.gtf.
+The previous step in the pipeline is: miranda_output_conversion_BED_2024-4-9.ipynb (/home/administrator/Documents/Kaas/Venom_ncRNA_project/Scripts/miRanda/miranda_formating/miranda_output_conversion_BED_2024-4-9.ipynb)
+The next steps of the pipeline is: miranda_bedtools_intersect_2024-4-9.sh (/home/administrator/Documents/Kaas/Venom_ncRNA_project/Scripts/BEDtools/Intersect/miranda_bedtools_intersect_2024-4-9.sh)
+Step8c
+
+awk '$3 == "exon"' /home/administrator/Documents/Kaas/Venom_ncRNA_project/Usable_data/Genome_files/CroVir_rnd1.all.maker.final.homologIDs.updatedNov2019_with_myos_geneidmod.gtf > /home/administrator/Documents/Kaas/Venom_ncRNA_project/Usable_data/Genome_files/CroVir_rnd1.all.maker.final.homologIDs.updatedNov2019_with_myos_geneidmod_exons.gtf
