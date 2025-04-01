@@ -4,7 +4,7 @@
 library(tidyverse)
 library(arrow)
 # Source my functions
-source('/Users/kaasballard/Library/CloudStorage/OneDrive-UTArlington/Bin/R/MyFunctions/MyFunctions.R')
+# source('/Users/kaasballard/Library/CloudStorage/OneDrive-UTArlington/Bin/R/MyFunctions/MyFunctions.R')
 
 
 # Set Up ----
@@ -12,21 +12,37 @@ source('/Users/kaasballard/Library/CloudStorage/OneDrive-UTArlington/Bin/R/MyFun
 # Create variable for the fused dataset.
 miRNA_mRNA_protein_data <- 'Data/Merged/mRNA_Protein_miRNA_Combined_Data_2025.01.22.parquet'
 
+# Read in the cluster data
+wgcn_clusters <- 'Data/WGCNA/WGCNA_Loci_Clusters_2025.03.26.parquet'
+
 # Read both in as data frames
-# Let's keep the analysis limited to the 3UTR
 mi_df <- read_parquet(file = miRNA_mRNA_protein_data) %>% 
   dplyr::filter(
     !str_detect(genes, 'maker-scaffold|augustus|XP_'),
     !sample.id == "CV1082_viridis",
-    feature.type == 'three_prime_utr'
+    # Filter out Venom_ADAM28 and CTL6 because they were not in the WGCNA data
+    !str_detect(genes, 'Venom_ADAM28|Venom_CTL6')
   ) %>% 
   select(
-    miRNA.cluster, genes, total.energy, total.score
+    miRNA.cluster, genes, total.energy, total.score, feature.type
   ) %>% 
   mutate(
     miRNA.cluster = str_replace(miRNA.cluster, 'cvi-', '')
   ) %>% 
   distinct()
+
+# Read in the wgcn clusters
+wgcna_df <- read_parquet(file = wgcn_clusters) %>% 
+  # Change the name of the genes col
+  rename(Locus = genes) %>% 
+  mutate(
+    # Remove Venom_ from the venom gene names
+    Locus = str_replace(Locus, 'Venom_', ''),
+    # Remove 'cvi-' from infront of the miRNA names
+    Locus = str_replace(Locus, 'cvi-', ''),
+    # Remove the space between the cluster and number
+    Locus = str_replace_all(Locus, '_', ' ')
+  )
 
 
 # Create color scheme for the venom genes
@@ -41,7 +57,7 @@ myotoxin_color <- '#B2182B'
 vQC_color <- '#80BC50'
 CRISP_color <- '#E7298A'
 CTL_color <- '#F67E17'
-EXO_color <- '#49FFFF'
+EXO_color <- '#005824'
 LAAO_color <- '#B35806'
 BPP_color <- '#1B9E77'
 miRNA_color <- '#BEBEBE' # This is the same as typing 'grey'
@@ -53,54 +69,46 @@ miRNA_color <- '#BEBEBE' # This is the same as typing 'grey'
 ### Edge table ----
 # Create a smaller data frame for only the relavent data for Cytoscape for venom genes and PLA2G2
 edge_venom_miRNA_cytoscape_df <- mi_df %>% 
-  filter(str_detect(genes, 'Venom_|PLA2G2E.1')) %>% # IMPORTANT: THIS IS HOW YOU DETECT MULTIPLE STINGS!!!!!
+  filter(str_detect(genes, 'Venom_')) %>% # I am not doing PLA2GE.1 because it wasn't in the WGCNA data
   select(
-    miRNA.cluster, genes, total.score, total.energy
+    miRNA.cluster, genes, feature.type
   ) %>% 
   rename(
     miRNA_ID = miRNA.cluster,
     Gene_ID = genes,
-    Binding_Score = total.score,
-    Binding_Energy = total.energy
+    Target = feature.type
   ) %>% 
   mutate(Gene_ID = str_replace_all(Gene_ID, 'Venom_', '')) %>% 
   mutate(miRNA_ID = str_replace_all(miRNA_ID, '_', ' '))
 # Save the file
-write.table(edge_venom_miRNA_cytoscape_df, file = 'Data/Cytoscape/3UTR/Edge_Cytoscape_miRNA_Venom_interaction_Data.2025.03.23.tsv', sep = '\t', quote = FALSE, row.names = F)
+write.table(edge_venom_miRNA_cytoscape_df, file = 'Data/Cytoscape/WGCNA/Edge_Cytoscape_miRNA_Venom_interaction_Data.2025.03.26.tsv', sep = '\t', quote = FALSE, row.names = F)
 
 ### Note table ----
 # Create a node table based on the above edge table
 node_venom_miRNA_cytoscape_df <- edge_venom_miRNA_cytoscape_df %>% 
-  select(-contains('Binding')) %>% 
+  select(-Target) %>% 
   pivot_longer(
     cols = c('miRNA_ID', 'Gene_ID'),
     names_to = 'Locus_Type',
     values_to = 'Locus'
   ) %>% 
+  distinct() %>% 
+  full_join(
+    wgcna_df,
+    by = c('Locus')
+  ) %>% 
   mutate(
-    nodeColor = case_when(
-      grepl('SVMP', Locus) ~ SVMP_color,
-      grepl('SVSP', Locus) ~ SVSP_color,
-      grepl('PLA2', Locus) ~ PLA2_color,
-      grepl('VEGF', Locus) ~ VEGF_color,
-      grepl('ohanin', Locus) ~ ohanin_color,
-      grepl('vQC', Locus) ~ vQC_color,
-      grepl('CRISP', Locus) ~ CRISP_color,
-      grepl('CTL', Locus) ~ CTL_color,
-      grepl('EXO', Locus) ~ EXO_color,
-      grepl('LAAO', Locus) ~ LAAO_color,
-      grepl('myotoxin', Locus) ~ myotoxin_color,
-      grepl('BPP', Locus) ~ BPP_color,
-      grepl('miRNA', Locus_Type) ~ miRNA_color
+    ClusterColor = case_when(
+      str_detect(module, 'turquoise') ~ '#40E0D0',
+      str_detect(module, 'blue') ~ '#0000FF',
+      str_detect(module, 'brown') ~ '#A52A2A',
+      str_detect(module, 'grey') ~ '#C0C0C0'
     ),
-    nodeShape = case_when(
+    NodeShape = case_when(
       grepl('Gene_ID', Locus_Type) ~ 'Ellipse',
       grepl('miRNA_ID', Locus_Type) ~ 'Round Rectangle'
     )
   )
 # Save the file
-write.table(node_venom_miRNA_cytoscape_df, file = 'Data/Cytoscape/3UTR/Node_Cytoscape_miRNA_Venom_interaction_Data.2025.03.23.tsv', sep = '\t', quote = FALSE, row.names = F)
-
-
-
+write.table(node_venom_miRNA_cytoscape_df, file = 'Data/Cytoscape/WGCNA/Node_Cytoscape_miRNA_Venom_interaction_Data.2025.03.26.tsv', sep = '\t', quote = FALSE, row.names = F)
 

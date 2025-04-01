@@ -50,7 +50,7 @@ no_feature_type_data <- 'Data/Merged/No_feature_type_miRNA_numbers_per_sample_mR
 filt_no_feature_type_data <- 'Data/Merged/No_feature_type_filtered_miRNA_numbers_per_sample_mRNA-Protein.2025.01.22.parquet'
 
 ## Read miRNA number data ----
-miRNA_num_df <- read_parquet(file = miRNA_number_data) %>% 
+miRNA_num_df <- read_parquet(file = miRNA_number_data) %>%
   filter(
     # !sample.id == 'CV1082_viridis',
     !str_detect(genes, 'maker-scaffold|augustus|XP_|ADAM28'),
@@ -78,7 +78,7 @@ miRNA_num_df <- miRNA_num_df %>%
   )
 
 ## Read miRNA number data (no feature type version) ----
-no_ft_miRNA_num_df <- read_parquet(file = no_feature_type_data) %>% 
+no_ft_miRNA_num_df <- read_parquet(file = no_feature_type_data) %>%
   filter(
     # !sample.id == 'CV1082_viridis',
     !str_detect(genes, 'maker-scaffold|augustus|XP_|ADAM28'),
@@ -104,7 +104,7 @@ no_ft_miRNA_num_df <- no_ft_miRNA_num_df %>%
   )
 
 ## Read filtered miRNA number data ----
-filt_miRNA_num_df <- read_parquet(file = filtered_miRNA_number_data) %>% 
+filt_miRNA_num_df <- read_parquet(file = filtered_miRNA_number_data) %>%
   filter(
     # !sample.id == 'CV1082_viridis',
     !str_detect(genes, 'maker-scaffold|augustus|XP_|ADAM28'),
@@ -131,7 +131,7 @@ filt_miRNA_num_df <- filt_miRNA_num_df %>%
   )
 
 ## Read filtered miRNA number data (no feature type version) ----
-no_ft_filt_miRNA_num_df <- read_parquet(file = filt_no_feature_type_data) %>% 
+no_ft_filt_miRNA_num_df <- read_parquet(file = filt_no_feature_type_data) %>%
   filter(
     # !sample.id == 'CV1082_viridis',
     !str_detect(genes, 'maker-scaffold|augustus|XP_|ADAM28'),
@@ -167,7 +167,7 @@ snake_tree <- ape::read.tree(tree_file)
 # Create color scheme for the venom genes
 SVMP_color <- '#4A70B5'
 ADAM_color <- '#9A70B5'
-SVSP_color <- '#F0B830' 
+SVSP_color <- '#F0B830'
 PLA2_color <- '#7570B3'
 miRNA_color <- '#8B0AA5'
 VEGF_color <- '#74ADD1'
@@ -209,18 +209,18 @@ any(is.nan(snake_tree$edge.length) | is.na(snake_tree$edge.length))
 snake_tree <- ape::compute.brlen(snake_tree)
 
 # Clean the tip labels by removing single quotes
-snake_tree$tip.label <- gsub("'", "", snake_tree$tip.label) 
+snake_tree$tip.label <- gsub("'", "", snake_tree$tip.label)
 
 # Check the cleaned tip labels
 snake_tree$tip.label
 
 # Create a vector that contains names to rename the old ones
 tip_names <- c(
-  "CV0857_viridis_North_M" = 'CV0857_viridis', 
-  "CV1081_viridis_Mid_M" = 'CV1081_viridis', 
-  "CV1087_viridis_North_F" = 'CV1087_viridis', 
-  "CV1086_viridis_South_M" = 'CV1086_viridis', 
-  "CV0985_concolor_Other_F" = 'CV0985_concolor', 
+  "CV0857_viridis_North_M" = 'CV0857_viridis',
+  "CV1081_viridis_Mid_M" = 'CV1081_viridis',
+  "CV1087_viridis_North_F" = 'CV1087_viridis',
+  "CV1086_viridis_South_M" = 'CV1086_viridis',
+  "CV0985_concolor_Other_F" = 'CV0985_concolor',
   "CV0987_lutosus_Other_F" = 'CV0987_lutosus'
 )
 

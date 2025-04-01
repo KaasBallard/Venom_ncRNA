@@ -48,7 +48,7 @@ mRNA_protein_data <- 'Data/Merged/mRNA_Protein_Combined_Data_2025.01.22.parquet'
 file.exists(mRNA_protein_data)
 
 ## Read in expression data ----
-mRNA_protein_df <- read_parquet(file = mRNA_protein_data) %>% 
+mRNA_protein_df <- read_parquet(file = mRNA_protein_data) %>%
   dplyr::filter(
     !sample.id == 'CV1082_viridis',
     !str_detect(genes, 'maker-scaffold|augustus|XP_|ADAM28'),
@@ -119,18 +119,18 @@ any(is.nan(snake_tree$edge.length) | is.na(snake_tree$edge.length))
 snake_tree <- ape::compute.brlen(snake_tree)
 
 # Clean the tip labels by removing single quotes
-snake_tree$tip.label <- gsub("'", "", snake_tree$tip.label) 
+snake_tree$tip.label <- gsub("'", "", snake_tree$tip.label)
 
 # Check the cleaned tip labels
 snake_tree$tip.label
 
 # Create a vector that contains names to rename the old ones
 tip_names <- c(
-  "CV0857_viridis_North_M" = 'CV0857_viridis', 
-  "CV1081_viridis_Mid_M" = 'CV1081_viridis', 
-  "CV1087_viridis_North_F" = 'CV1087_viridis', 
-  "CV1086_viridis_South_M" = 'CV1086_viridis', 
-  "CV0985_concolor_Other_F" = 'CV0985_concolor', 
+  "CV0857_viridis_North_M" = 'CV0857_viridis',
+  "CV1081_viridis_Mid_M" = 'CV1081_viridis',
+  "CV1087_viridis_North_F" = 'CV1087_viridis',
+  "CV1086_viridis_South_M" = 'CV1086_viridis',
+  "CV0985_concolor_Other_F" = 'CV0985_concolor',
   "CV0987_lutosus_Other_F" = 'CV0987_lutosus'
 )
 

@@ -240,7 +240,7 @@ network <- blockwiseModules(
   
   # TOM -- Archive the run results in TOM file (saves time)
   saveTOMs = TRUE,
-  saveTOMFileBase = "Scripts/R/VariationAnalysis/5_WGCNA_miRNA_and_venom_genes_2025.02.25",
+  saveTOMFileBase = "Data/WGCNA/WGCNA_TOM_2025.02.25",
   
   # Output options
   numericLabels = TRUE,
@@ -270,7 +270,7 @@ network <- blockwiseModules(
 # Calculating new MEs...
 
 # Save the entire network object
-save(network, file = "Scripts/R/VariationAnalysis/5_WGCNA_Complete_Network_2025.02.25.RData")
+save(network, file = "Data/WGCNA/Complete_Network_2025.02.25.RData")
 
 # Convert labels to colors for plotting
 merged_colors = labels2colors(network$colors)
@@ -288,7 +288,7 @@ length(blockGeneNames)
 length(dendro$order)
 
 # Save the dendrogram
-pdf(file = 'Figures/WGCNA/WGCNA_Dendrogram_2025.02.27.pdf', width = 25, height = 15)
+pdf(file = 'Figures/WGCNA/WGCNA_Dendrogram_2025.02.27.pdf', width = 25, height = 15, pointsize = 14)
 # Plot the dendrogram and the module colors underneath
 plotDendroAndColors(
   network$dendrograms[[1]],
@@ -314,6 +314,7 @@ module_df <- data.frame(
   genes = names(network$colors),
   module = labels2colors(network$colors)
 )
+write_parquet(module_df, sink = 'Data/WGCNA/WGCNA_Loci_Clusters_2025.03.26.parquet')
 
 
 
@@ -352,10 +353,10 @@ gene_miRNA_module_df <- full_join(
 
 # Resolve conflicting font values for genes/miRNAs by assigning 'bold' if any 'bold' font exists for a gene/miRNA
 gene_miRNA_module_df <- gene_miRNA_module_df %>%
-  group_by(genes) %>%
+  group_by(genes, module) %>%
   mutate(font = ifelse(any(font == 'bold'), 'bold', 'plain')) %>%
-  ungroup() %>%
-  group_by(miRNA.cluster) %>%
+  ungroup() %>% 
+  group_by(miRNA.cluster, module) %>%
   mutate(font = ifelse(any(font == 'bold'), 'bold', 'plain')) %>%
   ungroup()
 
@@ -442,6 +443,94 @@ cluster_dendrogram <- ggplot() +
   ) 
 cluster_dendrogram
 ggsave(filename = 'Figures/WGCNA/WGCNA_Dendrogram_ggplot_version_2025.02.27.pdf', plot = cluster_dendrogram, create.dir = TRUE, height = 10, width = 15, dpi = 900)
+
+
+### Check if the the miRNAs are in modules with at least 1 venom gene they target in the 3UTR and 5UTR ----
+
+# Create a smaller version of the relationships data frame so that I can make fontfaces for the module_df
+relationships_3utr_and_5utr_df <- relationships_df %>% 
+  filter(
+    feature.type == c('three_prime_utr', 'five_prime_utr')
+  ) %>% 
+  distinct(
+    genes, miRNA.cluster
+  ) %>% 
+  rename(miRNA.target.cluster = miRNA.cluster)
+
+# Fuse the modules together
+gene_miRNA_3_5utr_module_df <- full_join(
+  miRNA_module_df,
+  gene_module_df,
+  by = 'module',
+  relationship = 'many-to-many'
+) %>% 
+  # Right join to filter out any miRNAs that don't exist anymore because they targeted something only in the CDS region
+  right_join(
+    relationships_3utr_and_5utr_df,
+    by = 'genes',
+    relationship = 'many-to-many'
+  ) %>% 
+  mutate(
+    # Set the font to bold if the miRNA or gene clusters together based on WGCNA and share targeting based on miRanda
+    same.module = ifelse(miRNA.target.cluster == miRNA.cluster, 'yes', 'no')
+  )
+
+# Resolve conflicting font values for genes/miRNAs by assigning 'bold' if any 'bold' font exists for a gene/miRNA
+gene_miRNA_3_5utr_module_df <- gene_miRNA_3_5utr_module_df %>%
+  group_by(genes, module) %>%
+  mutate(same.module = ifelse(any(same.module == 'yes'), 'yes', 'no')) %>%
+  ungroup() %>%
+  group_by(miRNA.cluster, module) %>%
+  mutate(same.module = ifelse(any(same.module == 'yes'), 'yes', 'no')) %>%
+  ungroup()
+# YEAH, all of them still target at least one gene they are in the same module as a venom gene they target!!!!!!
+
+
+### Check if the the miRNAs are in modules with at least 1 venom gene they target in the 3UTR only ----
+
+# Create a smaller version of the relationships data frame so that I can make fontfaces for the module_df
+relationships_3utr_df <- relationships_df %>% 
+  filter(
+    feature.type == c('three_prime_utr')
+  ) %>% 
+  distinct(
+    genes, miRNA.cluster
+  ) %>% 
+  rename(miRNA.target.cluster = miRNA.cluster)
+
+# Fuse the modules together
+gene_miRNA_3utr_module_df <- full_join(
+  miRNA_module_df,
+  gene_module_df,
+  by = 'module',
+  relationship = 'many-to-many'
+) %>% 
+  # Right join to filter out any miRNAs that don't exist anymore because they targeted something only in the CDS region
+  right_join(
+    relationships_3utr_df,
+    by = 'genes',
+    relationship = 'many-to-many'
+  ) %>% 
+  mutate(
+    # Set the font to bold if the miRNA or gene clusters together based on WGCNA and share targeting based on miRanda
+    same.module = ifelse(miRNA.target.cluster == miRNA.cluster, 'yes', 'no')
+  ) %>% 
+  select(
+    -miRNA.cluster
+  )
+
+# Resolve conflicting font values for genes/miRNAs by assigning 'bold' if any 'bold' font exists for a gene/miRNA
+gene_miRNA_3utr_module_df <- gene_miRNA_3utr_module_df %>%
+  group_by(genes, module) %>%
+  mutate(same.module = ifelse(any(same.module == 'yes'), 'yes', 'no')) %>%
+  ungroup() %>%
+  group_by(miRNA.target.cluster, module) %>%
+  mutate(same.module = ifelse(any(same.module == 'yes'), 'yes', 'no')) %>%
+  ungroup()
+# YEAH, all of them still target at least one gene they are in the same module as a venom gene they target!!!!!!
+
+
+
 
 
 ## Calculate Eigengenes ----
