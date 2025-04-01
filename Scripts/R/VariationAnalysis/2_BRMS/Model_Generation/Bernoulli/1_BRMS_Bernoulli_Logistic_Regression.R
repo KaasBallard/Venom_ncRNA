@@ -74,7 +74,8 @@ mean_protein <- mean(miRNA_num_df$intensity)
 miRNA_num_df <- miRNA_num_df %>%
   mutate(
     mRNA.level = ifelse(mRNA.counts > mean_mRNA, 1, 0),
-    protein.level = ifelse(intensity > mean_protein, 1, 0)
+    protein.level = ifelse(intensity > mean_protein, 1, 0),
+    mRNA.level2 = if_else(mRNA.counts > 1000, 1, 0)
   )
 
 ## Read miRNA number data (no feature type version) ----
@@ -100,7 +101,8 @@ mean_protein <- mean(no_ft_miRNA_num_df$intensity)
 no_ft_miRNA_num_df <- no_ft_miRNA_num_df %>%
   mutate(
     mRNA.level = ifelse(mRNA.counts > mean_mRNA, 1, 0),
-    protein.level = ifelse(intensity > mean_protein, 1, 0)
+    protein.level = ifelse(intensity > mean_protein, 1, 0),
+    mRNA.level2 = if_else(mRNA.counts > 1000, 1, 0)
   )
 
 ## Read filtered miRNA number data ----
@@ -127,7 +129,8 @@ mean_protein <- mean(filt_miRNA_num_df$intensity)
 filt_miRNA_num_df <- filt_miRNA_num_df %>%
   mutate(
     mRNA.level = ifelse(mRNA.counts > mean_mRNA, 1, 0),
-    protein.level = ifelse(intensity > mean_protein, 1, 0)
+    protein.level = ifelse(intensity > mean_protein, 1, 0),
+    mRNA.level2 = if_else(mRNA.counts > 1000, 1, 0)
   )
 
 ## Read filtered miRNA number data (no feature type version) ----
@@ -153,7 +156,8 @@ mean_protein <- mean(no_ft_filt_miRNA_num_df$intensity)
 no_ft_filt_miRNA_num_df <- no_ft_filt_miRNA_num_df %>%
   mutate(
     mRNA.level = ifelse(mRNA.counts > mean_mRNA, 1, 0),
-    protein.level = ifelse(intensity > mean_protein, 1, 0)
+    protein.level = ifelse(intensity > mean_protein, 1, 0),
+    mRNA.level2 = if_else(mRNA.counts > 1000, 1, 0)
   )
 
 ## Tree data ----
@@ -383,7 +387,7 @@ priors <- c(
 )
 
 # Diagnostics directory
-diagnostics_path <- sprintf("Scripts/R/VariationAnalysis/2_BRMS/Model_Diagnostics/Bernoulli/Inter_%d_2025.03.02", iterations)
+diagnostics_path <- sprintf("Figures/Model_Diagnostics/Bernoulli/Inter_%d_2025.03.02", iterations)
 
 ## Bernoulli models ----
 ### Venom model #1: mRNA vs miRNA numbers ----
@@ -395,7 +399,7 @@ t1 <- Sys.time()
 # Run the model
 model1 <- brm(
   mRNA.binary ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | r(sample.id, cov = phylo_cov_matrix)),
   data = miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -442,7 +446,7 @@ t1 <- Sys.time()
 # Run the model
 model2 <- brm(
   mRNA.binary ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = filt_miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -489,7 +493,7 @@ t1 <- Sys.time()
 # Run the model
 model3 <- brm(
   protein.binary ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -535,7 +539,7 @@ t1 <- Sys.time()
 # Run the model
 model4 <- brm(
   protein.binary ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = filt_miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -584,7 +588,7 @@ t1 <- Sys.time()
 # Run the model
 model5 <- brm(
   mRNA.level ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -631,7 +635,7 @@ t1 <- Sys.time()
 # Run the model
 model6 <- brm(
   mRNA.level ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = filt_miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -678,7 +682,7 @@ t1 <- Sys.time()
 # Run the model
 model7 <- brm(
   protein.level ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -724,7 +728,7 @@ t1 <- Sys.time()
 # Run the model
 model8 <- brm(
   protein.level ~
-    number.of.miRNAs + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = filt_miRNA_num_df,
   family = bernoulli(link = 'logit'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
