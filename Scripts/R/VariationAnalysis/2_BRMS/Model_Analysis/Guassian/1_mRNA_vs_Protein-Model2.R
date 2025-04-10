@@ -348,7 +348,7 @@ mRNA_vs_protein_plot <- ggplot(data = mRNA_protein_df, aes(x = mRNA.vst, y = log
     legend.position = 'bottom',
     legend.title.position = 'top'
   ) +
-  facet_wrap( ~ venom.family)
+  facet_wrap(~ venom.family)
 mRNA_vs_protein_plot
 ggsave('Figures/Expression_Plots/BRMS/mRNA_vs_Protein/Guassian/Main/Venom_model2_mRNA_vs_protein_line.2025.03.20.png', plot = mRNA_vs_protein_plot, height = 15, width = 20, create.dir = TRUE)
 
@@ -882,7 +882,45 @@ filt_r_and_binding_energy_bubble_plot <- ggplot(miRNA_covariance_df2, aes(x = ge
 filt_r_and_binding_energy_bubble_plot
 ggsave("Figures/Expression_Plots/BRMS/mRNA_vs_Protein/Guassian/Residuals/Model2/Correlation/filtered_miRNA_residauls_correlation_and_be_bubble_plot_2025.03.20.pdf", plot = filt_r_and_binding_energy_bubble_plot, width = 15, height = 28, dpi = 900, create.dir = TRUE)
 
-# CTL4 expression
-ctl4 <- mi_df %>%
-  filter(genes == 'Venom_CTL4') %>%
-  distinct(sample.id, genes, mRNA.vst)
+#### Create a version with only 3' UTR targeting ----
+
+# Remove the 5' UTR and CDS targeting
+miRNA_covariance_3UTR_df <- miRNA_covariance_df2 %>%
+  filter(feature.type == 'three_prime_utr') %>%
+  distinct()
+
+# Create bubble plot
+# Create bubble plot that encodes R as the color and Binding Score as the size
+r_and_binding_energy_bubble_plot_3UTR <- ggplot(miRNA_covariance_3UTR_df, aes(x = genes, y = miRNA.cluster)) +
+  geom_point(aes(size = total.energy, fill = pearson.cor), alpha = 0.75, shape = 21, stroke = 1) +  # 'stroke' controls the width of the outline
+  scale_fill_gradient2(
+    low = 'red',
+    mid = 'white',
+    high = 'blue',
+    midpoint = 0,
+    breaks = seq(-1, 1, by = 0.2), # Increase number of breaks
+    labels = seq(-1, 1, by = 0.2)  # Show absolute values in the legend
+  ) +
+  # scale_fill_viridis_c(option = 'magma') +
+  # scale_color_manual(name = 'Binding Target', values = setNames(r_squared_df2$feature.type.Color, r_squared_df2$feature.type)) +  # Use custom colors
+  scale_size_continuous(range = c(15, 1)) +
+  labs(
+    x = 'Genes',
+    y = 'miRNAs',
+    size = 'Binding Energy',
+    fill = 'Pearson correlation coefficient',
+    title = 'Correlation and Binding Energy'
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(colour = 'black', face = 'bold', margin = margin(b = 5, t = 5), size = 15),
+    legend.key = element_blank(),
+    axis.text.x = element_text(colour = "black", size = 10, angle = 70, vjust = 1, hjust = 1),
+    axis.text.y = element_text(colour = "black", size = 8),
+    legend.text = element_text(size = 10, face = "bold", colour = "black"),
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.position = "bottom",
+    legend.title.position = "top"
+  )
+r_and_binding_energy_bubble_plot_3UTR
+ggsave("Figures/Expression_Plots/BRMS/mRNA_vs_Protein/Guassian/Residuals/Model2/Correlation/2filtered_3UTR_miRNA_residauls_correlation_and_be_bubble_plot_2025.04.01.pdf", plot = r_and_binding_energy_bubble_plot_3UTR, width = 4, height = 7, dpi = 900, create.dir = TRUE)

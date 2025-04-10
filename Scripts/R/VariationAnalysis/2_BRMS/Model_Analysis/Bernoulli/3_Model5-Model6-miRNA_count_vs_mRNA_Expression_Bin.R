@@ -1,4 +1,4 @@
-# Last Edited: 2025/04/01
+# Last Edited: 2025/04/09
 
 # Set up and Read Data ----
 
@@ -165,15 +165,15 @@ model6 <- readRDS(
 model5_summary <- summary(model5)
 model5_summary
 # > model5_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: mRNA.level ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: miRNA_num_df (Number of observations: 185) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: mRNA.level ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: miRNA_num_df (Number of observations: 185)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.73      0.53     0.05     2.02 1.00     4465     3772
 
@@ -191,15 +191,15 @@ model5_summary
 model6_summary <- summary(model6)
 model6_summary
 # > model6_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: mRNA.level ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: filt_miRNA_num_df (Number of observations: 116) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: mRNA.level ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: filt_miRNA_num_df (Number of observations: 116)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.67      0.50     0.03     1.89 1.00     4276     4043
 
@@ -253,8 +253,10 @@ model5_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
+    data = miRNA_num_df,
     aes(y = mRNA.level, color = venom.family),
-    shape = 16
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
   ) +
   # Get rid of the gray box around the venom family legend points
   guides(color = guide_legend(override.aes = list(fill = NA, shape = 16))) +
@@ -284,7 +286,7 @@ model5_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 model5_plot
-ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model5_plot_2025.03.05.png", plot = model5_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model5_plot_2025.04.09.png", plot = model5_plot, width = 10, height = 10, create.dir = TRUE)
 
 
 # Plot and examine venom model 6 ----
@@ -326,8 +328,10 @@ model6_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
-    aes(y = mRNA.level, color = venom.family),
-    shape = 16
+    data = filt_miRNA_num_df,
+    aes(y = mRNA.binary, color = venom.family),
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
   ) +
   # Get rid of the gray box around the venom family legend points
   guides(color = guide_legend(override.aes = list(fill = NA, shape = 16))) +
@@ -357,4 +361,4 @@ model6_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 model6_plot
-ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model6_plot_2025.03.05.png", plot = model6_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model6_plot_2025.04.09.png", plot = model6_plot, width = 10, height = 10, create.dir = TRUE)

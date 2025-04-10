@@ -1,4 +1,4 @@
-# Last Edited: 2025/03/05
+# Last Edited: 2025/04/09
 
 # Set up and Read Data ----
 
@@ -80,7 +80,7 @@ miRNA_num_df <- miRNA_num_df %>%
 
 
 ## Read filtered miRNA number data ----
-filt_miRNA_num_df <- read_parquet(file = filtered_miRNA_number_data) %>% 
+filt_miRNA_num_df <- read_parquet(file = filtered_miRNA_number_data) %>%
   filter(
     !sample.id == 'CV1082_viridis',
     !str_detect(genes, 'maker-scaffold|augustus|XP_|ADAM28'),
@@ -166,15 +166,15 @@ model2 <- readRDS(
 # Summarize model1
 model1_summary <- summary(model1)
 model1_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: mRNA.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: miRNA_num_df (Number of observations: 185) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: mRNA.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: miRNA_num_df (Number of observations: 185)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.65      0.64     0.02     2.35 1.00     4204     4249
 
@@ -190,15 +190,15 @@ model1_summary
 # Summarize model2
 model2_summary <- summary(model2)
 model2_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: mRNA.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: filt_miRNA_num_df (Number of observations: 116) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: mRNA.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: filt_miRNA_num_df (Number of observations: 116)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.97      1.03     0.03     3.67 1.00     4747     4532
 
@@ -252,8 +252,11 @@ model1_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
+    # Set data
+    data = miRNA_num_df,
     aes(y = mRNA.binary, color = venom.family),
-    shape = 16
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
   ) +
   # Get rid of the gray box around the venom family legend points
   guides(color = guide_legend(override.aes = list(fill = NA, shape = 16))) +
@@ -283,7 +286,7 @@ model1_plot <- ggplot(
     axis.title = element_text(face = 'italic')
   )
 model1_plot
-ggsave('Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model1_plot_2025.03.05.png', plot = model1_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave('Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model1_plot_2025.04.09.png', plot = model1_plot, width = 10, height = 10, create.dir = TRUE)
 
 
 ## Try plotting with a regular glm ----
@@ -295,7 +298,11 @@ glm_model1_plot <- ggplot(
     y = mRNA.binary
   )
 ) +
-  geom_point(aes(y = mRNA.binary, color = venom.family)) +
+  geom_point(
+    aes(y = mRNA.binary, color = venom.family),
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
+  ) +
   geom_smooth(
     formula = y ~ x,
     method = 'glm',
@@ -323,7 +330,7 @@ glm_model1_plot <- ggplot(
     axis.title = element_text(face = 'italic')
   )
 glm_model1_plot
-ggsave('Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model1_plot_2025.03.05.png', plot = glm_model1_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave('Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model1_plot_2025.04.09.png', plot = glm_model1_plot, width = 10, height = 10, create.dir = TRUE)
 
 
 
@@ -366,8 +373,10 @@ model2_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
+    data = filt_miRNA_num_df,
     aes(y = mRNA.binary, color = venom.family),
-    shape = 16
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
   ) +
   # Get rid of the gray box around the venom family legend points
   guides(color = guide_legend(override.aes = list(fill = NA, shape = 16))) +
@@ -397,7 +406,7 @@ model2_plot <- ggplot(
     axis.title = element_text(face = 'italic')
   )
 model2_plot
-ggsave('Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model2_plot_2025.03.05.png', plot = model2_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave('Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model2_plot_2025.04.09.png', plot = model2_plot, width = 10, height = 10, create.dir = TRUE)
 
 ## Try plotting with a regular glm ----
 # Create a plot with tidybayes output for the model
@@ -408,7 +417,11 @@ glm_model2_plot <- ggplot(
     y = mRNA.binary
   )
 ) +
-  geom_point(aes(y = mRNA.binary, color = venom.family)) +
+  geom_point(
+    aes(y = mRNA.binary, color = venom.family),
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
+  ) +
   geom_smooth(
     formula = y ~ x,
     method = 'glm',
@@ -436,4 +449,4 @@ glm_model2_plot <- ggplot(
     axis.title = element_text(face = 'italic')
   )
 glm_model2_plot
-ggsave('Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model2_plot_2025.03.05.png', plot = glm_model2_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave('Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model2_plot_2025.04.09.png', plot = glm_model2_plot, width = 10, height = 10, create.dir = TRUE)

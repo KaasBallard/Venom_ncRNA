@@ -78,7 +78,7 @@ snake_tree <- ape::read.tree(tree_file)
 # Create color scheme for the venom genes
 SVMP_color <- '#4A70B5'
 ADAM_color <- '#9A70B5'
-SVSP_color <- '#F0B830' 
+SVSP_color <- '#F0B830'
 PLA2_color <- '#7570B3'
 miRNA_color <- '#8B0AA5'
 VEGF_color <- '#74ADD1'
@@ -332,7 +332,7 @@ t1 <- Sys.time()
 # Run the model
 model1 <- brm(
   log.protein ~
-    mRNA.vst * venom.family + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    mRNA.vst * venom.family + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = mRNA_protein_df,
   family = gaussian(link = 'identity'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -378,7 +378,7 @@ t1 <- Sys.time()
 # Run the model
 model2 <- brm(
   log.protein ~
-    mRNA.vst * venom.family + (1|gr(sample.id, cov = phylo_cov_matrix)),
+    mRNA.vst * venom.family + (1 | gr(sample.id, cov = phylo_cov_matrix)),
   data = mRNA_protein_df,
   family = student(link = 'identity'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),
@@ -423,7 +423,7 @@ t1 <- Sys.time()
 
 # Run the model
 model3 <- brm(
-  bf(log.protein ~ mRNA.vst * venom.family + (1|gr(sample.id, cov = phylo_cov_matrix)), sigma ~ 0 + venom.family),  # Allows different variances for each venom family
+  bf(log.protein ~ mRNA.vst * venom.family + (1 | gr(sample.id, cov = phylo_cov_matrix)), sigma ~ 0 + venom.family),  # Allows different variances for each venom family
   data = mRNA_protein_df,
   family = gaussian(link = 'identity'),
   data2 = list(phylo_cov_matrix = phylo_cov_matrix),

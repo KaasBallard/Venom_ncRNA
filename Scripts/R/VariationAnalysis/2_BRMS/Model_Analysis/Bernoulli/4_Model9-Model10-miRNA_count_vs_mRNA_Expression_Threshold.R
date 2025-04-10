@@ -1,4 +1,4 @@
-# Last Edited: 2025/04/01
+# Last Edited: 2025/04/09
 
 # Set up and Read Data ----
 
@@ -127,12 +127,12 @@ venom_colors <- c(
 ### Load the saved models ----
 # protein vs miRNA numbers model
 model9 <- readRDS(
-  "Data/Models/mRNA_vs_Number_of_miRNAs/Bernoulli/Model9_with_500000_iterations_2025.04.01.rds"
+  "Data/Models/mRNA_vs_Number_of_miRNAs/Bernoulli/Model9_with_500000_iterations_2025.04.09.rds"
 )
 
 # mRNA vs miRNA numbers model, filtered
 model10 <- readRDS(
-  "Data/Models/mRNA_vs_Number_of_miRNAs/Bernoulli/Model10_with_500000_iterations_2025.04.01.rds"
+  "Data/Models/mRNA_vs_Number_of_miRNAs/Bernoulli/Model10_with_500000_iterations_2025.04.09.rds"
 )
 
 ### Summarize the models ----
@@ -140,15 +140,15 @@ model10 <- readRDS(
 model9_summary <- summary(model9)
 model9_summary
 # > model9_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: mRNA.level2 ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: miRNA_num_df (Number of observations: 185) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: mRNA.level2 ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: miRNA_num_df (Number of observations: 185)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.37      0.32     0.01     1.22 1.00     4605     4295
 
@@ -166,15 +166,15 @@ model9_summary
 model10_summary <- summary(model10)
 model10_summary
 # > model10_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: mRNA.level2 ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: filt_miRNA_num_df (Number of observations: 116) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: mRNA.level2 ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: filt_miRNA_num_df (Number of observations: 116)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.55      0.49     0.02     1.77 1.00     4527     4254
 
@@ -229,7 +229,10 @@ model9_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
+    data = miRNA_num_df,
     aes(y = mRNA.level2, color = venom.family),
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5,
     shape = 16
   ) +
   # Get rid of the gray box around the venom family legend points
@@ -260,7 +263,8 @@ model9_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 model9_plot
-ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model9_plot_2025.04.01.png", plot = model9_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model9_plot_2025.04.09.png", plot = model9_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model9_plot_2025.04.09.pdf", plot = model9_plot, width = 10, height = 10, create.dir = TRUE)
 
 
 # Plot and examine venom model 10 ----
@@ -302,8 +306,10 @@ model10_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
+    data = filt_miRNA_num_df,
     aes(y = mRNA.level2, color = venom.family),
-    shape = 16
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
   ) +
   # Get rid of the gray box around the venom family legend points
   guides(color = guide_legend(override.aes = list(fill = NA, shape = 16))) +
@@ -333,4 +339,5 @@ model10_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 model10_plot
-ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model10_plot_2025.04.01.png", plot = model10_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model10_plot_2025.04.09.png", plot = model10_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model10_plot_2025.04.09.pdf", plot = model10_plot, width = 10, height = 10, create.dir = TRUE)

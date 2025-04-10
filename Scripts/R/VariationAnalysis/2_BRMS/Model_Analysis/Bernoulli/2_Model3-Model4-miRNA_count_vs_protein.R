@@ -1,4 +1,4 @@
-# Last Edited: 2025/03/05
+# Last Edited: 2025/04/09
 
 # Set up and Read Data ----
 
@@ -166,15 +166,15 @@ model4 <- readRDS(
 # Summarize model3
 model3_summary <- summary(model3)
 model3_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: protein.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: miRNA_num_df (Number of observations: 185) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: protein.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: miRNA_num_df (Number of observations: 185)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.31      0.31     0.01     1.13 1.00     4597     4289
 
@@ -190,15 +190,15 @@ model3_summary
 # Summarize model4
 model4_summary <- summary(model4)
 model4_summary
-#  Family: bernoulli 
-#   Links: mu = logit 
-# Formula: protein.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix)) 
-#    Data: filt_miRNA_num_df (Number of observations: 116) 
+#  Family: bernoulli
+#   Links: mu = logit
+# Formula: protein.binary ~ number.of.miRNAs + (1 | gr(sample.id, cov = phylo_cov_matrix))
+#    Data: filt_miRNA_num_df (Number of observations: 116)
 #   Draws: 6 chains, each with iter = 5e+05; warmup = 125000; thin = 500;
 #          total post-warmup draws = 4500
 
 # Multilevel Hyperparameters:
-# ~sample.id (Number of levels: 6) 
+# ~sample.id (Number of levels: 6)
 #               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
 # sd(Intercept)     0.44      0.40     0.02     1.47 1.00     4494     4707
 
@@ -252,8 +252,10 @@ model3_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
+    data = miRNA_num_df,
     aes(y = protein.binary, color = venom.family),
-    shape = 16
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
   ) +
   # Get rid of the gray box around the venom family legend points
   guides(color = guide_legend(override.aes = list(fill = NA, shape = 16))) +
@@ -283,7 +285,8 @@ model3_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 model3_plot
-ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model3_plot_2025.03.05.png", plot = model3_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model3_plot_2025.04.09.png", plot = model3_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model3_plot_2025.04.09.pdf", plot = model3_plot, width = 10, height = 10, create.dir = TRUE)
 
 
 ## Try plotting with a regular glm ----
@@ -295,7 +298,11 @@ glm_model3_plot <- ggplot(
     y = protein.binary
   )
 ) +
-  geom_point(aes(y = protein.binary, color = venom.family)) +
+  geom_point(
+    aes(y = protein.binary, color = venom.family),
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
+  ) +
   geom_smooth(
     formula = y ~ x,
     method = "glm",
@@ -323,7 +330,7 @@ glm_model3_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 glm_model3_plot
-ggsave("Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model3_plot_2025.03.05.png", plot = glm_model3_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model3_plot_2025.04.09.png", plot = glm_model3_plot, width = 10, height = 10, create.dir = TRUE)
 
 
 
@@ -366,8 +373,10 @@ model4_plot <- ggplot(
 ) +
   # Add the points
   geom_point(
+    data = filt_miRNA_num_df,
     aes(y = protein.level, color = venom.family),
-    shape = 16
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
   ) +
   # Get rid of the gray box around the venom family legend points
   guides(color = guide_legend(override.aes = list(fill = NA, shape = 16))) +
@@ -397,7 +406,9 @@ model4_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 model4_plot
-ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model4_plot_2025.03.05.png", plot = model4_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model4_plot_2025.04.09.png", plot = model4_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/BRMS/miRNA_numbers_vs_mRNA/Bernoulli/model4_plot_2025.04.09.pdf", plot = model4_plot, width = 10, height = 10, create.dir = TRUE)
+
 
 ## Try plotting with a regular glm ----
 # Create a plot with tidybayes output for the model
@@ -408,7 +419,11 @@ glm_model4_plot <- ggplot(
     y = protein.level
   )
 ) +
-  geom_point(aes(y = protein.level, color = venom.family)) +
+  geom_point(
+    aes(y = protein.binary, color = venom.family),
+    position = position_jitter(width = 0, height = 0.05),
+    alpha = 0.5
+  ) +
   geom_smooth(
     formula = y ~ x,
     method = "glm",
@@ -436,4 +451,4 @@ glm_model4_plot <- ggplot(
     axis.title = element_text(face = "italic")
   )
 glm_model4_plot
-ggsave("Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model4_plot_2025.03.05.png", plot = glm_model4_plot, width = 10, height = 10, create.dir = TRUE)
+ggsave("Figures/Expression_Plots/GLM/miRNA_numbers_vs_mRNA/Bernoulli/model4_plot_2025.04.09.png", plot = glm_model4_plot, width = 10, height = 10, create.dir = TRUE)

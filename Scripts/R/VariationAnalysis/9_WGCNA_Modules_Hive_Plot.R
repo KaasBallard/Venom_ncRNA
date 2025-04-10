@@ -432,16 +432,20 @@ norm_count_boxplot <- ggplot(
   )
 ) +
   geom_boxplot() +
-  scale_color_manual(values = c('blue', 'red')) + 
+  scale_fill_manual(values = c('#ADD8E6', '#FF5F1F')) + 
   labs(
     y = 'Normalized Count',
     x = 'Relationship',
     fill = 'Relationship'
   ) + 
-  ggpubr::stat_compare_means(method = 't.test') +
-  theme_linedraw()
+  # ggpubr::stat_compare_means(method = 't.test') +
+  theme_linedraw() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank()
+  )
 norm_count_boxplot
-ggsave(filename = 'Figures/WGCNA/Module_Comparison_Boxplot_2025.03.31.png', plot = norm_count_boxplot, create.dir = TRUE, width = 6, height = 8)
+ggsave(filename = 'Figures/WGCNA/Module_Comparison_Boxplot_2025.03.31.png', plot = norm_count_boxplot, create.dir = TRUE, width = 3, height = 5)
 
 
 

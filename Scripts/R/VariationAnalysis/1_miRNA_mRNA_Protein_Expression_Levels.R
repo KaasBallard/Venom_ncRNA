@@ -1438,7 +1438,7 @@ venom_protein_with_variance_heatmap <- ggdraw() +
   draw_label("b. Venom gene protein sample-wide expression heatmap with variances", fontface = 'bold', size = 14, x = 0.5, y = 0.99, hjust = 0.5) +
   draw_plot(venom_protein_with_variance_heatmap, y = 0, height = 0.9)  # Adjust height and y to fit the title and plots
 venom_protein_with_variance_heatmap
-ggsave("Figures/Heat_Maps/Protein/Venom_protein_heatmap_with_variance_2025.01.23.pdf", plot = venom_protein_with_variance_heatmap, width = 18, height = 4, dpi = 900, create.dir = T)
+ggsave("Figures/Heat_Maps/Protein/Venom_protein_heatmap_with_variance_2025.01.23.pdf", plot = venom_protein_with_variance_heatmap, width = 14, height = 8, dpi = 900, create.dir = T)
 
 
 
@@ -1568,7 +1568,7 @@ ggsave("Figures/Heat_Maps/miRNA/miRNA_all_heatmap_2025.01.23.pdf", plot = miRNA_
 # Create a combined heatmap of miRNAs expression and their variance
 miRNA_combined_heatmap <- plot_grid(miRNA_variance_heatmap, miRNA_all_heatmap, ncol = 1, align = 'v', rel_heights = c(0.1, 1))
 miRNA_combined_heatmap
-ggsave("Figures/Heat_Maps/miRNA/miRNA_all_with_variance_heatmap_2025.01.23.pdf", plot = miRNA_combined_heatmap, width = 18, height = 6, dpi = 900, create.dir = T)
+ggsave("Figures/Heat_Maps/miRNA/miRNA_all_with_variance_heatmap_2025.01.23.pdf", plot = miRNA_combined_heatmap, width = 14, height = 8, dpi = 900, create.dir = T)
 
 
 
@@ -1695,7 +1695,7 @@ venom_miRNAs_with_variance_heatmap <- ggdraw() +
   draw_label("c. Venom gene targeting miRNAs sample-wide expression heatmap with variances", fontface = 'bold', size = 18, x = 0.5, y = 0.99, hjust = 0.5) +
   draw_plot(venom_miRNAs_with_variance_heatmap, y = 0, height = 0.9)  # Adjust height and y to fit the title and plots
 venom_miRNAs_with_variance_heatmap
-ggsave("Figures/Heat_Maps/miRNA/Venom_miRNA_heatmap_with_variance_2025.01.23.pdf", plot = venom_miRNAs_with_variance_heatmap, width = 18, height = 4, dpi = 900, create.dir = T)
+ggsave("Figures/Heat_Maps/miRNA/Venom_miRNA_heatmap_with_variance_2025.01.23.pdf", plot = venom_miRNAs_with_variance_heatmap, width = 14, height = 8, dpi = 900, create.dir = T)
 
 
 

@@ -235,8 +235,8 @@ pca1 <- ggplot(
   coord_fixed() +
   labs(title = 'PCA for differential expression between species') +
   theme_classic() +
-  theme(plot.title = element_text(hjust = 0.5)) +  # Center the title
-  stat_ellipse(level = 0.95)
+  theme(plot.title = element_text(hjust = 0.5)) # Center the title
+  # stat_ellipse(level = 0.95)
 pca1
 ggsave('Figures/DESeq2/P-adjusted/PCA/Species_DESeq_PCA.2025.02.05.pdf', pca1, create.dir = T)
 
@@ -1156,7 +1156,6 @@ cluster_1395_plot <- ggplot(cluster_1395_stats, aes(x = species, y = mean_count,
   )
 cluster_1395_plot
 ggsave('Figures/DESeq2/P-adjusted/DESeq_Counts/Nicer_Plots/SVMP7_Group/Cluster_1395_DESeq2_Targets_SVSP7_SVMP7_normalized_counts_2025.02.05.pdf', plot = cluster_1395_plot, width = 4, height = 5, dpi = 900, create.dir = T)
-ggsave('Figures/DESeq2/P-adjusted/DESeq_Counts/Nicer_Plots/SVSP7_Group/Cluster_1395_DESeq2_Targets_SVSP7_SVMP7_normalized_counts_2025.02.05.pdf', plot = cluster_1395_plot, width = 4, height = 5, dpi = 900, create.dir = T)
 
 
 ### CRISP2 group ----
@@ -1415,5 +1414,306 @@ pla2k_and_miRNA
 ggsave('Figures/1_Main_Figures/Figure_ad/Figure_ad_2025.02.05.pdf', plot = pla2k_and_miRNA, width = 5, height = 4, dpi = 900, create.dir = T)
 
 
+### Create Plots Containing Venom Genes and their paired miRNAs (sig DE) ----
+
+#### Format data ----
+# Get VST
+vst <- as.data.frame(assay(vsd))
+
+# Convert row names to column
+vst <- rownames_to_column(vst, var = 'genes') %>% 
+  pivot_longer(
+    cols = matches('CV'),
+    names_to = 'sample.id',
+    values_to = 'vst'
+  )
+
+# Convert the dds results to a more managable format and filter out insignificant genes
+dds_results <- remove_rownames(res_combined_df) %>% 
+  filter(
+    # Filter out insignificant results
+    padj < 0.05,
+    # Filter out anything that isn't Venom or miRNA
+    str_detect(genes, 'Venom_|cvi-|Cluster')
+  ) %>% 
+  # Join the vst results to this
+  left_join(
+    vst,
+    by = 'genes'
+  )
+
+# Get the significant miRNAs
+sig_miRNA_df <- dds_results %>% 
+  filter(!str_detect(genes, 'Venom')) %>% 
+  rename('genes' = 'miRNA.cluster') %>% 
+  rename_with(
+    ~paste0('mi.', .), -c('miRNA.cluster', 'sample.id')
+  )
+
+# Get the significant venoms
+sig_genes_df <- dds_results %>% 
+  filter(str_detect(genes, 'Venom')) %>% 
+  rename_with(
+    ~paste0('mr.', .), -c('genes', 'sample.id')
+  )
+
+# Fuse back together with the relationships_df at the core
+sig_df <- relationships_df %>% 
+  full_join(
+    sig_genes_df,
+    by = c('genes'),
+    relationship = 'many-to-many'
+  ) %>% 
+  filter(!is.na(mr.vst)) %>%
+  inner_join(
+    sig_miRNA_df,
+    by = c('miRNA.cluster', 'sample.id')
+  ) %>% 
+  distinct(
+    sample.id, genes, venom.family, miRNA.cluster, mr.pvalue, mi.pvalue, mr.vst, mi.vst,
+  ) %>% 
+  mutate(
+    species = case_when(
+      str_detect(sample.id, 'lutosus|concolor') ~ 'C. oreganus group',
+      TRUE ~ 'C. v. viridis'
+    )
+  )
+
+# Create a vector for the colors
+species_colors <- c(
+  'C. oreganus group' = oreganus_color,
+  'C. v. viridis' = viridis_color
+)
+
+#### Figures ----
+
+##### CRISP2 ----
+
+# Create a data frame for the gene in quesion
+crisp2_df <- sig_df %>% 
+  filter(str_detect(genes, 'CRISP'))
+
+# Get it's miRNAs
+mi_crisp2_df <- crisp2_df %>% 
+  select(sample.id, genes = miRNA.cluster, pvalue = mi.pvalue, vst = mi.vst, species)
+
+# Format the data frame for joining
+crisp2_df <- crisp2_df %>% 
+  distinct(sample.id, genes, pvalue = mr.pvalue, vst = mr.vst, species) %>% 
+  full_join(mi_crisp2_df)
+  
+crisp2_summary_df <- crisp2_df %>% 
+  group_by(genes, species) %>%
+  summarise(
+    mean_vst = mean(vst),
+    sd_vst = sd(vst),
+    se_vst = sd(vst) / sqrt(n()),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Create a plot combining bar chart and error bars with individual points
+crisp2_bar_plot <- ggplot(crisp2_summary_df, aes(x = species, y = mean_vst, fill = species)) +
+  # Add bars for the means
+  geom_bar(stat = "identity", width = 0.7) +
+  # Add error bars for standard error
+  geom_errorbar(aes(ymin = mean_vst - se_vst, ymax = mean_vst + se_vst), 
+                width = 0.2, position = position_dodge(0.7)) +
+  # Add individual data points
+  geom_point(data = crisp2_df, aes(x = species, y = vst, group = species),
+             position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.7),
+             size = 2, alpha = 0.8, shape = 16) +
+  # Use your color scheme
+  scale_fill_manual(values = species_colors) +
+  # Labels
+  labs(
+    x = 'Species group',
+    y = 'Expression (VST)',
+    fill = 'Species group'
+  ) +
+  # Theme
+  theme_linedraw() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    strip.background = element_rect(fill = "lightgrey"),
+    strip.text = element_text(face = "bold", color = 'black')
+  ) +  # Create facets for the different genes/miRNAs
+  facet_grid(cols = vars(genes), scales = "free_y")
+crisp2_bar_plot
+ggsave('Figures/DESeq2/P-adjusted/DESeq_Counts/Nicer_Plots/CRISP2_Group/CRISP_and_targeting_miRNAs_2025.04.01.pdf', plot = crisp2_bar_plot, width = 5, height = 3, dpi = 900, create.dir = T)
+
+
+##### PLA2K ----
+
+# Create a data frame for the gene in quesion
+pla2k_df <- sig_df %>% 
+  filter(str_detect(genes, 'PLA2K'))
+
+# Get it's miRNAs
+mi_pla2k_df <- pla2k_df %>% 
+  select(sample.id, genes = miRNA.cluster, pvalue = mi.pvalue, vst = mi.vst, species)
+
+# Format the data frame for joining
+pla2k_df <- pla2k_df %>% 
+  distinct(sample.id, genes, pvalue = mr.pvalue, vst = mr.vst, species) %>% 
+  full_join(mi_pla2k_df)
+
+pla2k_summary_df <- pla2k_df %>% 
+  group_by(genes, species) %>%
+  summarise(
+    mean_vst = mean(vst),
+    sd_vst = sd(vst),
+    se_vst = sd(vst) / sqrt(n()),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Create a plot combining bar chart and error bars with individual points
+pla2k_bar_plot <- ggplot(pla2k_summary_df, aes(x = species, y = mean_vst, fill = species)) +
+  # Add bars for the means
+  geom_bar(stat = "identity", width = 0.5) +
+  # Add error bars for standard error
+  geom_errorbar(aes(ymin = mean_vst - se_vst, ymax = mean_vst + se_vst), 
+                width = 0.2, position = position_dodge(0.7)) +
+  # Add individual data points
+  geom_point(data = pla2k_df, aes(x = species, y = vst, group = species),
+             position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.7),
+             size = 2, alpha = 0.8, shape = 16) +
+  # Use your color scheme
+  scale_fill_manual(values = species_colors) +
+  # Labels
+  labs(
+    x = 'Species group',
+    y = 'Expression (VST)',
+    fill = 'Species group'
+  ) +
+  # Theme
+  theme_linedraw() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    strip.background = element_rect(fill = "lightgrey"),
+    strip.text = element_text(face = "bold", color = 'black')
+  ) +
+  # Create facets for the different genes/miRNAs
+  facet_grid(cols = vars(genes), scales = "free_y")
+pla2k_bar_plot
+ggsave('Figures/DESeq2/P-adjusted/DESeq_Counts/Nicer_Plots/PLA2K_Group/PLA2K_and_targeting_miRNAs_2025.04.01.pdf', plot = pla2k_bar_plot, width = 4, height = 3, dpi = 900, create.dir = T)
+
+
+##### SVMP7 ----
+
+# Create a data frame for the gene in quesion
+svmp7_df <- sig_df %>% 
+  filter(str_detect(genes, 'SVMP7'))
+
+# Get it's miRNAs
+mi_svmp7_df <- svmp7_df %>% 
+  select(sample.id, genes = miRNA.cluster, pvalue = mi.pvalue, vst = mi.vst, species)
+
+# Format the data frame for joining
+svmp7_df <- svmp7_df %>% 
+  distinct(sample.id, genes, pvalue = mr.pvalue, vst = mr.vst, species) %>% 
+  full_join(mi_svmp7_df)
+
+svmp7_summary_df <- svmp7_df %>% 
+  group_by(genes, species) %>%
+  summarise(
+    mean_vst = mean(vst),
+    sd_vst = sd(vst),
+    se_vst = sd(vst) / sqrt(n()),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Create a plot combining bar chart and error bars with individual points
+svmp7_bar_plot <- ggplot(svmp7_summary_df, aes(x = species, y = mean_vst, fill = species)) +
+  # Add bars for the means
+  geom_bar(stat = "identity", width = 0.5) +
+  # Add error bars for standard error
+  geom_errorbar(aes(ymin = mean_vst - se_vst, ymax = mean_vst + se_vst), 
+                width = 0.1, position = position_dodge(0.7)) +
+  # Add individual data points
+  geom_point(data = svmp7_df, aes(x = species, y = vst, group = species),
+             position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.7),
+             size = 1, alpha = 0.8, shape = 16) +
+  # Use your color scheme
+  scale_fill_manual(values = species_colors) +
+  # Labels
+  labs(
+    y = 'Expression (VST)',
+    fill = 'Species group'
+  ) +
+  # Theme
+  theme_linedraw() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    strip.background = element_rect(fill = "lightgrey"),
+    strip.text = element_text(face = "bold", color = 'black')
+  ) +
+  # Create facets for the different genes/miRNAs
+  facet_grid(cols = vars(genes), scales = "free_y")
+svmp7_bar_plot
+ggsave('Figures/DESeq2/P-adjusted/DESeq_Counts/Nicer_Plots/SVMP7_Group/SVMP7_and_targeting_miRNAs_2025.04.01.pdf', plot = svmp7_bar_plot, width = 10, height = 4, dpi = 900, create.dir = T)
+
+
+
+##### SVSP7 ----
+
+# Create a data frame for the gene in quesion
+svsp7_df <- sig_df %>% 
+  filter(str_detect(genes, 'SVSP7'))
+
+# Get it's miRNAs
+mi_svsp7_df <- svsp7_df %>% 
+  select(sample.id, genes = miRNA.cluster, pvalue = mi.pvalue, vst = mi.vst, species)
+
+# Format the data frame for joining
+svsp7_df <- svsp7_df %>% 
+  distinct(sample.id, genes, pvalue = mr.pvalue, vst = mr.vst, species) %>% 
+  full_join(mi_svsp7_df)
+
+svsp7_summary_df <- svsp7_df %>% 
+  group_by(genes, species) %>%
+  summarise(
+    mean_vst = mean(vst),
+    sd_vst = sd(vst),
+    se_vst = sd(vst) / sqrt(n()),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Create a plot combining bar chart and error bars with individual points
+svsp7_bar_plot <- ggplot(svsp7_summary_df, aes(x = species, y = mean_vst, fill = species)) +
+  # Add bars for the means
+  geom_bar(stat = "identity", width = 0.5) +
+  # Add error bars for standard error
+  geom_errorbar(aes(ymin = mean_vst - se_vst, ymax = mean_vst + se_vst), 
+                width = 0.1, position = position_dodge(0.7)) +
+  # Add individual data points
+  geom_point(data = svsp7_df, aes(x = species, y = vst, group = species),
+             position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.7),
+             size = 1, alpha = 0.8, shape = 16) +
+  # Use your color scheme
+  scale_fill_manual(values = species_colors) +
+  # Labels
+  labs(
+    y = 'Expression (VST)',
+    fill = 'Species group'
+  ) +
+  # Theme
+  theme_linedraw() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    strip.background = element_rect(fill = "lightgrey"),
+    strip.text = element_text(face = "bold", color = 'black')
+  ) +
+  # Create facets for the different genes/miRNAs
+  facet_grid(cols = vars(genes), scales = "free_y")
+svsp7_bar_plot
+ggsave('Figures/DESeq2/P-adjusted/DESeq_Counts/Nicer_Plots/SVSP7_Group/SVSP7_and_targeting_miRNAs_2025.04.01.pdf', plot = svsp7_bar_plot, width = 8, height = 4, dpi = 900, create.dir = T)
 
 
