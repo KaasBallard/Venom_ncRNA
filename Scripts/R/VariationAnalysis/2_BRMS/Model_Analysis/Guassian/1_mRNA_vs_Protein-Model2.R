@@ -329,7 +329,10 @@ mRNA_vs_protein_plot <- ggplot(data = mRNA_protein_df, aes(x = mRNA.vst, y = log
     hjust = 1.2, vjust = 1.2, size = 3, # color = "black",
     inherit.aes = TRUE, show.legend = FALSE
   ) +
-
+  # # Make the coordinates fixed
+  # coord_fixed() +
+  # # Add a 1:1 line
+  # geom_abline(slope = 1, intercept = 0, linetype = 'solid', color = 'black', linewidth = 0.25) +
   scale_x_continuous() +  # Set x-axis to continuous scale
   scale_y_continuous() +  # Set y-axis to continuous scale
   labs(
@@ -408,6 +411,10 @@ mRNA_vs_protein_plot_ribbon <- ggplot(data = mRNA_protein_df, aes(x = mRNA.vst, 
     inherit.aes = TRUE, show.legend = FALSE
   ) +
 
+  # Make the coordinates fixed
+  coord_fixed() +
+  # Add a 1:1 line
+  geom_abline(slope = 1, intercept = 0, linetype = 'solid', color = '#AAAAAA', linewidth = 0.25) +
   scale_x_continuous() +  # Set x-axis to continuous scale
   scale_y_continuous() +  # Set y-axis to continuous scale
   labs(
@@ -426,10 +433,10 @@ mRNA_vs_protein_plot_ribbon <- ggplot(data = mRNA_protein_df, aes(x = mRNA.vst, 
     legend.position = 'bottom',
     legend.title.position = 'top'
   ) +
-  facet_wrap( ~ venom.family)
+  facet_wrap(~ venom.family)
 mRNA_vs_protein_plot_ribbon
 ggsave('Figures/Expression_Plots/BRMS/mRNA_vs_Protein/Guassian/Main/Venom_model2_mRNA_vs_protein_ribbon.2025.03.20.png', plot = mRNA_vs_protein_plot_ribbon, height = 15, width = 20, create.dir = TRUE)
-
+ggsave('Figures/Expression_Plots/BRMS/mRNA_vs_Protein/Guassian/Main/Venom_model2_mRNA_vs_protein_ribbon.2025.03.20.pdf', plot = mRNA_vs_protein_plot_ribbon, height = 15, width = 20, create.dir = TRUE)
 
 # Create a mean epred plot
 mRNA_vs_protein_plot_mean <- ggplot(data = mRNA_protein_df, aes(x = mRNA.vst, y = log.protein, color = venom.family)) +
