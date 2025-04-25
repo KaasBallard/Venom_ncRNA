@@ -324,7 +324,7 @@ model10_plot <- ggplot(
   scale_x_continuous(breaks = scales::pretty_breaks(n = 12)) +
   scale_y_continuous() +
   labs(
-    title = "Probability of venom protein expression",
+    title = "Probability of venom mRNA expression",
     x = "Number of targeting miRNAs",
     y = "Probability of mRNA expression",
     color = "Venom Family"
