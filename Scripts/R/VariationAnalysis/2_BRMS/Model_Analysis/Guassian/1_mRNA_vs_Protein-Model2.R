@@ -568,10 +568,14 @@ covariance_df <- model2_residuals_df %>%
   select(sample.id, genes, venom.family, residuals, miRNA.cluster, miRNA.vst) %>%
   group_by(venom.family, genes, miRNA.cluster) %>%
   summarise(
+    pearson.cor = cor(miRNA.vst, residuals, method = 'pearson'),
     pearson.cov = cov(miRNA.vst, residuals, method = 'pearson'),
+    # Calculate the p-values for the correlation
+    pearson.pval = cor.test(miRNA.vst, residuals, method = 'pearson')$p.value,
+    pearson.cor.test.statistic = cor.test(miRNA.vst, residuals, method = 'pearson')$statistic,
+    # Calculate other correlation methods
     kendall.cov = cov(miRNA.vst, residuals, method = 'kendall'),
     spearman.cov = cov(miRNA.vst, residuals, method = 'spearman'),
-    pearson.cor = cor(miRNA.vst, residuals, method = 'pearson'),
     # Calculate the variance in miRNA.vst and residuals to filter out genes that didn't vary enough for correlation to be meaningful
     miRNA.variance = var(miRNA.vst),
     residual.variance = var(residuals)
