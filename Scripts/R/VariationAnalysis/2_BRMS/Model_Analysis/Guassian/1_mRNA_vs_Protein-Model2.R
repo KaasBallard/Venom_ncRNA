@@ -606,7 +606,7 @@ miRNA_covariance_df <- left_join(
   relationship = 'many-to-many'
 ) %>%
   dplyr::select(
-    genes, venom.family, contains('cov'), pearson.cor, miRNA.cluster, total.score, total.energy, feature.type, contains('variance')
+    genes, venom.family, contains('cov'), pearson.cor, pearson.pval, miRNA.cluster, total.score, total.energy, feature.type, contains('variance')
   )  %>%
   mutate(genes = str_remove(genes, '^Venom_')) %>%
   distinct()
@@ -935,3 +935,65 @@ r_and_binding_energy_bubble_plot_3UTR <- ggplot(miRNA_covariance_3UTR_df, aes(x 
   )
 r_and_binding_energy_bubble_plot_3UTR
 ggsave("Figures/Expression_Plots/BRMS/mRNA_vs_Protein/Guassian/Residuals/Model2/Correlation/2filtered_3UTR_miRNA_residauls_correlation_and_be_bubble_plot_2025.04.01.pdf", plot = r_and_binding_energy_bubble_plot_3UTR, width = 4, height = 7, dpi = 900, create.dir = TRUE)
+
+
+
+### Filtered bubble plot for significant correlations instead of high ones ----
+
+# Set limits for grey and red color scale
+sig_level <- 0.05
+
+sig_cor_df <- miRNA_covariance_df %>%
+  filter(
+    # Filter out any pearson's correlation below the minimum to look at only interesting correlations
+    pearson.pval < sig_level
+    # # Filter out any low binding miRNAs
+    # total.energy <= max_total_energy,
+    # total.score >= min_total_score
+  )
+
+
+# Create bubble plot that encodes R as the color and Binding Score as the size
+sig_cor_bubble_plot <- ggplot(sig_cor_df, aes(x = genes, y = miRNA.cluster)) +
+  geom_point(aes(size = total.energy, fill = pearson.cor), alpha = 0.75, shape = 21, stroke = 1) +  # 'stroke' controls the width of the outline
+  scale_fill_gradient2(
+    low = 'red',
+    mid = 'white',
+    high = 'blue',
+    midpoint = 0,
+    breaks = seq(-1, 1, by = 0.2), # Increase number of breaks
+    labels = seq(-1, 1, by = 0.2)  # Show absolute values in the legend
+  ) +
+  # scale_fill_viridis_c(option = 'magma') +
+  # scale_color_manual(name = 'Binding Target', values = setNames(r_squared_df2$feature.type.Color, r_squared_df2$feature.type)) +  # Use custom colors
+  scale_size_continuous(range = c(15, 1)) +
+  labs(
+    x = 'Genes',
+    y = 'miRNAs',
+    size = 'Binding energy',
+    fill = 'Pearson correlation coefficient',
+    title = 'Significant correlation and binding energy'
+  ) +
+  theme_linedraw() +
+  theme(
+    plot.title = element_text(colour = 'black', face = 'bold', margin = margin(b = 5, t = 5), size = 15),
+    legend.key = element_blank(),
+    axis.text.x = element_text(colour = "black", size = 10, angle = 70, vjust = 1, hjust = 1),
+    axis.text.y = element_text(colour = "black", size = 8),
+    legend.text = element_text(size = 10, face = "bold", colour = "black"),
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.position = "right"
+  ) +
+  facet_grid(
+    feature.type ~ ., scales = 'free_y', space = 'free',
+    labeller = labeller(
+      feature.type = c(
+        'three_prime_utr' = "3' UTR",
+        'five_prime_utr' = "5' UTR",
+        'CDS' = "Coding Sequence"
+      )
+    )
+  )
+sig_cor_bubble_plot
+ggsave("Figures/Expression_Plots/BRMS/mRNA_vs_Protein/Guassian/Residuals/Model2/Correlation/significant_correlations_and_bubble_plot_2025.04.28.pdf", plot = sig_cor_bubble_plot, width = 10, height = 15, dpi = 900, create.dir = TRUE)
+
