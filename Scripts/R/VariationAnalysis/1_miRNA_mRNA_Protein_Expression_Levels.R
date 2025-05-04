@@ -28,6 +28,7 @@ library(ggtree)
 library(tidytree)
 library(tidybayes)
 library(arrow)
+library(patchwork)
 # Source my functions
 source('/Users/ballardk/Library/CloudStorage/OneDrive-UTArlington/Bin/R/MyFunctions/MyFunctions.R')
 
@@ -946,49 +947,6 @@ venom_protein_CV0987_pie_chart3 <- venom_protein_CV0987_pie_chart +
     title = expression(paste(italic('C. lutosus'), ' (CV0987) proteome'))
   )
 
-## Combine mRNA and Protein plot ----
-# Create figure 1
-figure_a <- plot_grid(
-  # CV1086
-  venom_mRNA_CV1086_pie_chart3,
-  venom_protein_CV1086_pie_chart3,
-  # CV1087
-  venom_mRNA_CV1087_pie_chart3,
-  venom_protein_CV1087_pie_chart3,
-  # CV1081
-  venom_mRNA_CV1081_pie_chart3,
-  venom_protein_CV1081_pie_chart3,
-  # CV0857
-  venom_mRNA_CV0857_pie_chart3,
-  venom_protein_CV0857_pie_chart3,
-  # CV0987
-  venom_mRNA_CV0987_pie_chart3,
-  venom_protein_CV0987_pie_chart3,
-  # CV0985
-  venom_mRNA_CV0985_pie_chart3,
-  venom_protein_CV0985_pie_chart3,
-  ncol = 2,
-  nrow = 6,
-  align = 'v'
-)
-figure_a
-
-# Add the tree to the plot
-figure_a <- plot_grid(
-  tree_plot,
-  figure_a,
-  align = 'v'
-)
-figure_a
-# Add title
-figure_a <- ggdraw() +
-  draw_label("b. Transcriptome and proteome profiles of three species", fontface = 'bold', size = 14, x = 0.5, y = 0.95, hjust = 0.5) +
-  draw_plot(figure_a, y = 0, height = 0.9)  # Adjust height and y to fit the title and plots
-figure_a
-ggsave("Figures/1_Main_Figures/Figure_a/Figure_a_2025.01.23.pdf", plot = figure_a, width = 10, height = 8, dpi = 2400, create.dir = T)
-
-
-
 
 # Supplemental Table a ----
 
@@ -1109,7 +1067,7 @@ write_csv3(table_a, file = 'Tables/2_Suplemental_Tables/Table_a/Table_a_2025.01.
 mRNA_all_genes_df <- mi_df %>% 
   filter(in.library == 'Yes') %>% # Remove any proteins not in the library sent to Anthony
   dplyr::select(
-    sample.id, genes, venom.family, mRNA.ntd
+    sample.id, genes, venom.family, mRNA.vst
   ) %>% 
   distinct()
 glimpse(mRNA_all_genes_df)
@@ -1118,7 +1076,7 @@ glimpse(mRNA_all_genes_df)
 # Calculate variance in mRNA
 mRNA_variance_df <- mRNA_all_genes_df %>%
   group_by(genes) %>%
-  summarize(variance = var(mRNA.ntd)) %>% 
+  summarize(variance = var(mRNA.vst)) %>% 
   ungroup()
 
 # Create a heatmap of variances per gene
@@ -1146,7 +1104,7 @@ mRNA_variance_heatmap
 
 # For these heat maps make sure to add a variance heat map over it 
 # Create heat map
-mRNA_all_heatmap <- ggplot(mRNA_all_genes_df, aes(y = sample.id, x = genes, fill = mRNA.ntd)) +
+mRNA_all_heatmap <- ggplot(mRNA_all_genes_df, aes(y = sample.id, x = genes, fill = mRNA.vst)) +
   geom_tile() +
   scale_fill_viridis_c(option = 'magma') +
   labs(
@@ -1197,7 +1155,7 @@ sample_order <- c(
 
 # Now for only venom
 # Prepare data
-all_venom_genes_mRNA_df <- mRNA_all_genes_df %>% 
+venom_mRNA_df <- mRNA_all_genes_df %>% 
   filter(
     str_starts(genes, 'Venom'),
     !str_detect(genes, 'ADAM')
@@ -1206,15 +1164,15 @@ all_venom_genes_mRNA_df <- mRNA_all_genes_df %>%
   distinct()
 
 # Set the order of venom genes
-all_venom_genes_mRNA_df$genes <- factor(all_venom_genes_mRNA_df$genes, levels = venom_gene_order)
+venom_mRNA_df$genes <- factor(venom_mRNA_df$genes, levels = venom_gene_order)
 
 # Set the order of the sample genes
-all_venom_genes_mRNA_df$sample.id <- factor(all_venom_genes_mRNA_df$sample.id, levels = sample_order)
+venom_mRNA_df$sample.id <- factor(venom_mRNA_df$sample.id, levels = sample_order)
 
 # Get the variance for the venom genes
-venom_mRNA_variance_df <- all_venom_genes_mRNA_df %>% 
+venom_mRNA_variance_df <- venom_mRNA_df %>% 
   group_by(genes) %>% 
-  summarize(variance = var(mRNA.ntd)) %>% 
+  summarize(variance = var(mRNA.vst)) %>% 
   ungroup()
 
 # Create venom variance heatmap
@@ -1243,7 +1201,7 @@ venom_mRNA_variance_heatmap <- ggplot(venom_mRNA_variance_df, aes(x = genes, y =
 venom_mRNA_variance_heatmap
 
 # Create venom expression heat map
-all_venom_genes_mRNA_heatmap <- ggplot(all_venom_genes_mRNA_df, aes(y = sample.id, x = genes, fill = mRNA.ntd)) +
+venom_mRNA_heatmap <- ggplot(venom_mRNA_df, aes(y = sample.id, x = genes, fill = mRNA.vst)) +
   geom_tile() +
   scale_fill_viridis_c(option = 'magma') +
   labs(
@@ -1259,12 +1217,12 @@ all_venom_genes_mRNA_heatmap <- ggplot(all_venom_genes_mRNA_df, aes(y = sample.i
     axis.title = element_text(size = 18, face = 'italic'),
     legend.title = element_text(size = 18, face = 'italic')
   ) 
-all_venom_genes_mRNA_heatmap
-ggsave("Figures/Heat_Maps/mRNA/Venom_mRNA_heatmap_2025.01.23.pdf", plot = all_venom_genes_mRNA_heatmap, width = 14, height = 4, dpi = 900, create.dir = T)
+venom_mRNA_heatmap
+ggsave("Figures/Heat_Maps/mRNA/Venom_mRNA_heatmap_2025.01.23.pdf", plot = venom_mRNA_heatmap, width = 14, height = 4, dpi = 900, create.dir = T)
 
 
 # Create a combined heatmap of venom genes and their variance
-venom_genes_with_variance_mRNA_heatmap <- plot_grid(venom_mRNA_variance_heatmap, all_venom_genes_mRNA_heatmap, ncol = 1, align ='v', rel_heights = c(0.1, 1))
+venom_genes_with_variance_mRNA_heatmap <- plot_grid(venom_mRNA_variance_heatmap, venom_mRNA_heatmap, ncol = 1, align ='v', rel_heights = c(0.1, 1))
 venom_genes_with_variance_mRNA_heatmap
 # Create title
 venom_genes_with_variance_mRNA_heatmap <- ggdraw() +
@@ -1441,6 +1399,14 @@ venom_protein_with_variance_heatmap
 ggsave("Figures/Heat_Maps/Protein/Venom_protein_heatmap_with_variance_2025.01.23.pdf", plot = venom_protein_with_variance_heatmap, width = 14, height = 8, dpi = 900, create.dir = T)
 
 
+# Venom protein and mRNA combined heatmap ----
+
+# Combine with patchwork
+venom_combined_heatmap <- venom_mRNA_heatmap / venom_protein_heatmap  # stacks them vertically
+venom_combined_heatmap
+ggsave("Figures/Heat_Maps/Combined/Venom_protein_mRNA_heatmap_2025.05.02.pdf", plot = venom_combined_heatmap, width = 18, height = 8, dpi = 900, create.dir = T)
+
+
 
 # miRNA Cluster Heat Maps ----
 
@@ -1453,7 +1419,7 @@ all_miRNA_df <- mi_df %>%
     !is.na(miRNA.cluster)
   ) %>% # Remove any proteins not in the library sent to Anthony
   dplyr::select(
-    sample.id, genes, venom.family, miRNA.cluster, miRNA.ntd
+    sample.id, genes, venom.family, miRNA.cluster, miRNA.vst
   ) %>% 
   distinct() %>% 
   mutate(miRNA.cluster = str_remove(miRNA.cluster, '^cvi-')) # Remove the 'cvi-' in front of each miRNA name
@@ -1467,7 +1433,7 @@ miRNA_wide_df <- all_miRNA_df %>%
   distinct() %>% 
   pivot_wider(
     names_from = sample.id,
-    values_from = miRNA.ntd
+    values_from = miRNA.vst
   )
 
 # Convert miRNA expression to a matrix
@@ -1514,7 +1480,7 @@ miRNA_variance_df <- all_miRNA_df %>%
   dplyr::select(-genes, -venom.family) %>% 
   distinct() %>% 
   group_by(miRNA.cluster) %>%
-  summarize(variance = var(miRNA.ntd)) %>% 
+  summarize(variance = var(miRNA.vst)) %>% 
   ungroup()
 
 # Drop genes column so that it doesn't overwrite the clusters multiple times
@@ -1546,7 +1512,7 @@ miRNA_variance_heatmap <- ggplot(miRNA_variance_df, aes(x = miRNA.cluster, y = 1
 miRNA_variance_heatmap
 
 # Create heat map
-miRNA_all_heatmap <- ggplot(all_miRNA_df2, aes(y = sample.id, x = miRNA.cluster, fill = miRNA.ntd)) +
+miRNA_all_heatmap <- ggplot(all_miRNA_df2, aes(y = sample.id, x = miRNA.cluster, fill = miRNA.vst)) +
   geom_tile() +
   scale_fill_viridis_c(option = 'magma') +
   labs(
@@ -1588,7 +1554,7 @@ venom_miRNA_wide_df <- venom_miRNA_df %>%
   distinct() %>% 
   pivot_wider(
     names_from = sample.id,
-    values_from = miRNA.ntd
+    values_from = miRNA.vst
   )
 
 # Convert miRNA expression to a matrix
@@ -1635,7 +1601,7 @@ venom_miRNA_variance_df <- venom_miRNA_df %>%
   dplyr::select(-genes, -venom.family) %>% 
   distinct() %>% 
   group_by(miRNA.cluster) %>%
-  summarize(variance = var(miRNA.ntd)) %>% 
+  summarize(variance = var(miRNA.vst)) %>% 
   ungroup()
 
 # Drop genes column so that it doesn't overwrite the clusters multiple times
@@ -1668,7 +1634,7 @@ venom_miRNA_variance_heatmap
 
 
 # Create heat map
-venom_miRNA_heatmap <- ggplot(venom_miRNA_df2, aes(y = sample.id, x = miRNA.cluster, fill = miRNA.ntd)) +
+venom_miRNA_heatmap <- ggplot(venom_miRNA_df2, aes(y = sample.id, x = miRNA.cluster, fill = miRNA.vst)) +
   geom_tile() +
   scale_fill_viridis_c(option = 'magma') +
   labs(
