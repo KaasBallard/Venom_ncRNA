@@ -443,6 +443,8 @@ gc()
 
 
 ### Venom model #2: mRNA vs Protein with student-t distribution ----
+# NOTE: This model is also good
+
 #### Run the model ----
 # Get time
 t1 <- Sys.time()
@@ -630,6 +632,8 @@ gc()
 
 
 ### Venom model #6: protein vs mRNA with miRNA numbers with student-t ----
+# NOTE: This model is also good
+
 #### Run the model ----
 # Get time
 t1 <- Sys.time()
@@ -677,6 +681,7 @@ gc()
 
 
 ### Venom model #7: protein vs mRNA with filtered miRNA numbers with student-t ----
+# NOTE: This model is good
 #### Run the model ----
 # Get time
 t1 <- Sys.time()
