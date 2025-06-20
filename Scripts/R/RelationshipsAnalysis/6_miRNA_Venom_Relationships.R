@@ -568,11 +568,11 @@ up_set_plot2 <- ComplexUpset::upset(
     'Intersection size' = intersection_size(
       mapping = aes(fill = 'bars_color'),
       text_colors = c(
-              on_background = 'black', on_bar = 'white'
+              on_background = 'black', on_bar = 'black'
             )
     ) + 
       scale_fill_manual(values = c('bars_color' = 'grey14'), guide = 'none') +
-      labs(y = "Number of miRNA Clusters") # Change Intersection size label 
+      labs(y = "Number of miRNAs") # Change Intersection size label 
   ),
   # Set width ratio
   width_ratio = 0.25,
@@ -588,6 +588,13 @@ up_set_plot2 <- ComplexUpset::upset(
   # group_by = 'sets',
   # Set venom family colors
   queries = list(
+    # Make the SVMPs red
+    upset_query(
+      intersect = c('SVMP'),
+      color = 'coral',
+      fill = 'coral',
+      only_components = c('Intersection size')
+    ),
     # Each of these queries gives the color for each gene family
     upset_query(
       set = 'SVMP',
@@ -643,7 +650,7 @@ up_set_plot2 <- ComplexUpset::upset(
   )
 )
 up_set_plot2
-ggsave('Figures/miRNA-Gene_Relationships/3UTR/UpSetPlot/Venom_family_UpSetPlot_2025.02.02.pdf', plot = up_set_plot2, create.dir = T, width = 20, height = 10, dpi = 900)
+ggsave('Figures/miRNA-Gene_Relationships/3UTR/UpSetPlot/Venom_family_UpSetPlot_2025.06.20.pdf', plot = up_set_plot2, create.dir = T, width = 20, height = 10, dpi = 900)
 
 
 # Create a second set df that contains the genes instead of families
